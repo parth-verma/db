@@ -8,7 +8,7 @@ Congratulations on generating your Wails3 application! This README will guide yo
 
 2. To run your application in development mode, use the following command:
 
-   ```
+   ```bash
    wails3 dev
    ```
 

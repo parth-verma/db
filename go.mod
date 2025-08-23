@@ -4,7 +4,11 @@ go 1.22.4
 
 toolchain go1.23.1
 
-require github.com/wailsapp/wails/v3 v3.0.0-alpha.9
+require (
+	github.com/go-sql-driver/mysql v1.7.1
+	github.com/lib/pq v1.10.9
+	github.com/wailsapp/wails/v3 v3.0.0-alpha.9
+)
 
 require (
 	dario.cat/mergo v1.0.1 // indirect
