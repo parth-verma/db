@@ -30,6 +30,11 @@ type DBConnectionService struct {
 	connections     []DBConnection
 }
 
+// TableInfo represents a database table
+type TableInfo struct {
+	Name string `json:"name"`
+}
+
 // NewDBConnectionService creates a new DBConnectionService
 func NewDBConnectionService() *DBConnectionService {
 	// Get the user's home directory
@@ -260,4 +265,81 @@ func (s *DBConnectionService) RunQuery(connectionID string, query string) ([]col
 	}
 
 	return types, data, nil
+}
+
+// GetDatabaseTables returns all tables in the database for a given connection
+func (s *DBConnectionService) GetDatabaseTables(connectionID string) ([]TableInfo, error) {
+	// Find the connection
+	var connection DBConnection
+	found := false
+	for _, conn := range s.connections {
+		if conn.ID == connectionID {
+			connection = conn
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return nil, fmt.Errorf("connection not found")
+	}
+
+	// Connect to the database
+	var db *sql.DB
+	var err error
+
+	switch connection.Type {
+	case "postgres":
+		connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+			connection.Host, connection.Port, connection.Username, connection.Password, connection.Database)
+		db, err = sql.Open("postgres", connStr)
+	case "mysql":
+		connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",
+			connection.Username, connection.Password, connection.Host, connection.Port, connection.Database)
+		db, err = sql.Open("mysql", connStr)
+	default:
+		return nil, fmt.Errorf("unsupported database type: %s", connection.Type)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	// Query to get tables based on database type
+	var query string
+	switch connection.Type {
+	case "postgres":
+		query = `SELECT table_name FROM information_schema.tables 
+				WHERE table_schema = 'public' 
+				ORDER BY table_name`
+	case "mysql":
+		query = fmt.Sprintf(`SELECT table_name FROM information_schema.tables 
+				WHERE table_schema = '%s' 
+				ORDER BY table_name`, connection.Database)
+	}
+
+	// Execute the query
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Collect table names
+	var tables []TableInfo
+	for rows.Next() {
+		var tableName string
+		if err := rows.Scan(&tableName); err != nil {
+			return nil, err
+		}
+		tables = append(tables, TableInfo{Name: tableName})
+	}
+
+	// Check for errors from iterating over rows
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return tables, nil
 }

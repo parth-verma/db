@@ -8,15 +8,24 @@ import path from "path"
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [
-
         tanstackRouter({
             target: 'react',
             autoCodeSplitting: true,
         }),
-        react(),tailwindcss(),],
+        react(),tailwindcss(),
+    ],
     resolve: {
         alias: {
+            "@main": path.resolve(__dirname, "./bindings/changeme"),
             "@": path.resolve(__dirname, "./src"),
+        },
+    },
+    build: {
+        rollupOptions: {
+            input: {
+                main: path.resolve(__dirname, 'index.html'),
+                connections: path.resolve(__dirname, 'connections.html'),
+            },
         },
     },
 })

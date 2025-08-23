@@ -22,10 +22,11 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@main": ["./bindings/changeme"],
+      "@/*": ["./src/*"],
     },
     "strictNullChecks": true
   },
-  "include": ["src"],
+  "include": ["src", "bindings"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
