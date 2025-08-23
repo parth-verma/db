@@ -7,7 +7,7 @@ version: '3'
 info:
   companyName: "Parth Verma" # The name of the company
   productName: "DB Explorer" # The name of the application
-  productIdentifier: "com.mycompany.myproduct" # The unique product identifier
+  productIdentifier: "com.parth.db-explorer" # The unique product identifier
   description: "Explorer for your DB" # The application description
   copyright: "(c) 2024, Parth Verma" # Copyright text
   comments: "No comments" # Comments
