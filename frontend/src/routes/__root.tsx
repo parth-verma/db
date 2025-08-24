@@ -9,8 +9,8 @@ export default function Root() {
     return (
         <>
             <div className={clsx("flex flex-col min-h-svh min-w-svw max-h-svh max-w-svw overflow-hidden bg-background", isDarkMode && "dark")}>
-                <div className="h-8 bg-sidebar">
-                    <div className="flex h-full items-center justify-end px-3 gap-2">
+                <div className="h-[38px] bg-sidebar">
+                    <div className="flex h-full items-center justify-end px-3 gap-2 border-b">
                         <Button variant="secondary" size="icon" className="size-4">
                             <PanelLeftIcon/>
                         </Button>

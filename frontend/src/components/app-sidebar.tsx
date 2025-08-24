@@ -1,139 +1,80 @@
 import * as React from "react"
-import { useState, useEffect } from "react"
-import { ChevronRight, Database, Table as TableIcon, Loader2 } from "lucide-react"
-
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarRail,
-} from "@/components/ui/sidebar"
-
-import { DBConnectionService } from "@main"
-import type { TableInfo } from "@main"
+import { useMemo } from "react"
+import { useQuery } from "@tanstack/react-query"
+import { Sidebar, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarRail } from "@/components/ui/sidebar"
+import { DBConnectionService, type DBConnection } from "@main"
+import { PostgresSidebar } from "./sidebar-postgres"
+import { MySQLSidebar } from "./sidebar-mysql"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [tables, setTables] = useState<TableInfo[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [connectionName, setConnectionName] = useState<string>("");
+  // Read current active connection id from localStorage
+  const connectionId = useMemo(() => {
+    try {
+      return localStorage.getItem('activeConnectionId')
+    } catch {
+      return null
+    }
+  }, [])
 
-  useEffect(() => {
-    const fetchTables = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
+  // Use React Query to load all connections (source of truth)
+  const { data: connections = [], isLoading, isError, error } = useQuery<DBConnection[]>({
+    queryKey: ['connections'],
+    queryFn: () => DBConnectionService.GetConnections(),
+    retry: false,
+  })
 
-        // Get the active connection ID from localStorage
-        const connectionId = localStorage.getItem('activeConnectionId');
+  const { connectionName, connectionType } = useMemo(() => {
+    const active = connections.find((c: any) => c.id === connectionId)
+    return {
+      connectionName: active?.name ?? "",
+      connectionType: active?.type ?? "",
+    }
+  }, [connections, connectionId])
 
-        if (!connectionId) {
-          setError("No active connection");
-          setIsLoading(false);
-          return;
-        }
-
-        // Get connection details to display the name
-        const connections = await DBConnectionService.GetConnections();
-        const activeConnection = connections.find(conn => conn.id === connectionId);
-        if (activeConnection) {
-          setConnectionName(activeConnection.name);
-        }
-
-        // Fetch tables for the active connection
-        const tables = await DBConnectionService.GetDatabaseTables(connectionId);
-        setTables(tables);
-      } catch (error) {
-        console.error("Error fetching tables:", error);
-        setError(error instanceof Error ? error.message : String(error));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchTables();
-  }, []);
-
-  return (
-    <Sidebar {...props}>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Database Tables</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {isLoading ? (
+  if (isLoading) {
+    return (
+      <Sidebar {...props}>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>Database Tables</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton>
-                    <Loader2 className="animate-spin" />
-                    Loading tables...
-                  </SidebarMenuButton>
+                  <SidebarMenuButton>Loading...</SidebarMenuButton>
                 </SidebarMenuItem>
-              ) : error ? (
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarRail />
+      </Sidebar>
+    )
+  }
+
+  const errMsg = isError ? (error instanceof Error ? error.message : String(error)) : null
+  if (errMsg || !connectionId || !connectionType) {
+    return (
+      <Sidebar {...props}>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>Database Tables</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton>
-                    Error: {error}
-                  </SidebarMenuButton>
+                  <SidebarMenuButton>{errMsg || (!connectionId ? "No active connection" : "Active connection not found")}</SidebarMenuButton>
                 </SidebarMenuItem>
-              ) : tables.length === 0 ? (
-                <SidebarMenuItem>
-                  <SidebarMenuButton>
-                    No tables found
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ) : (
-                <>
-                  <SidebarMenuItem>
-                    <Collapsible
-                      className="group/collapsible [&[data-state=open]>button>svg:first-child]:rotate-90"
-                      defaultOpen={true}
-                    >
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton>
-                          <ChevronRight className="transition-transform" />
-                          <Database />
-                          {connectionName || "Database"}
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {tables.map((table, index) => (
-                            <SidebarMenuButton
-                              key={index}
-                              className="ml-6"
-                              onClick={() => {
-                                // Set up a query for this table when clicked
-                                if (window.sqlEditor) {
-                                  window.sqlEditor.setValue(`SELECT * FROM ${table.name} LIMIT 100;`);
-                                }
-                              }}
-                            >
-                              <TableIcon />
-                              {table.name}
-                            </SidebarMenuButton>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  </SidebarMenuItem>
-                </>
-              )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarRail />
-    </Sidebar>
-  )
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarRail />
+      </Sidebar>
+    )
+  }
+
+  if (connectionType === 'postgres') {
+    return <PostgresSidebar connectionId={connectionId} connectionName={connectionName} {...props} />
+  }
+  return <MySQLSidebar connectionId={connectionId} connectionName={connectionName} {...props} />
 }
 

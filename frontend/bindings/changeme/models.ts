@@ -60,27 +60,3 @@ export class DBConnection {
         return new DBConnection($$parsedSource as Partial<DBConnection>);
     }
 }
-
-/**
- * TableInfo represents a database table
- */
-export class TableInfo {
-    "name": string;
-
-    /** Creates a new TableInfo instance. */
-    constructor($$source: Partial<TableInfo> = {}) {
-        if (!("name" in $$source)) {
-            this["name"] = "";
-        }
-
-        Object.assign(this, $$source);
-    }
-
-    /**
-     * Creates a new TableInfo instance from a string or object.
-     */
-    static createFrom($$source: any = {}): TableInfo {
-        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
-        return new TableInfo($$parsedSource as Partial<TableInfo>);
-    }
-}

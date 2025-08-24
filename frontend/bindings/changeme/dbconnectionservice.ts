@@ -38,25 +38,13 @@ export function GetConnections(): Promise<$models.DBConnection[]> & { cancel(): 
 }
 
 /**
- * GetDatabaseTables returns all tables in the database for a given connection
- */
-export function GetDatabaseTables(connectionID: string): Promise<$models.TableInfo[]> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(489988417, connectionID) as any;
-    let $typingPromise = $resultPromise.then(($result: any) => {
-        return $$createType3($result);
-    }) as any;
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
-}
-
-/**
  * RunQuery executes a query on the specified connection
  */
 export function RunQuery(connectionID: string, query: string): Promise<[$internal.columns[], string[][]]> & { cancel(): void } {
     let $resultPromise = $Call.ByID(3274057340, connectionID, query) as any;
     let $typingPromise = $resultPromise.then(($result: any) => {
-        $result[0] = $$createType5($result[0]);
-        $result[1] = $$createType7($result[1]);
+        $result[0] = $$createType3($result[0]);
+        $result[1] = $$createType5($result[1]);
         return $result;
     }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
@@ -82,9 +70,7 @@ export function TestConnection(connection: $models.DBConnection): Promise<void> 
 // Private type creation functions
 const $$createType0 = $models.DBConnection.createFrom;
 const $$createType1 = $Create.Array($$createType0);
-const $$createType2 = $models.TableInfo.createFrom;
+const $$createType2 = $internal.columns.createFrom;
 const $$createType3 = $Create.Array($$createType2);
-const $$createType4 = $internal.columns.createFrom;
+const $$createType4 = $Create.Array($Create.Any);
 const $$createType5 = $Create.Array($$createType4);
-const $$createType6 = $Create.Array($Create.Any);
-const $$createType7 = $Create.Array($$createType6);
