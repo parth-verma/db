@@ -1,6 +1,6 @@
 import {createRootRoute, Outlet} from '@tanstack/react-router'
 import {TanStackRouterDevtools} from '@tanstack/react-router-devtools'
-import {useMediaQuery} from "use-custom-hooks";
+import { useMediaQuery } from '@custom-react-hooks/use-media-query';
 import {clsx} from "clsx";
 import {PanelLeftIcon, PanelRightIcon} from "lucide-react";
 import {Button} from "@/components/ui/button"
