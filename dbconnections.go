@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
@@ -164,8 +166,100 @@ func (s *DBConnectionService) TestConnection(connection DBConnection) error {
 	return nil
 }
 
+func convertToString(val interface{}) string {
+	switch v := val.(type) {
+	case nil:
+		return "NULL"
+
+	// Most drivers return []byte for TEXT/VARCHAR when scanning into interface{}
+	case []byte:
+		return string(v)
+
+	// Common concrete types
+	case string:
+		return v
+	case bool:
+		if v {
+			return "true"
+		} else {
+			return "false"
+		}
+	case int64:
+		return strconv.FormatInt(v, 10)
+	case float64:
+		return strconv.FormatFloat(v, 'f', -1, 64)
+	case time.Time:
+		return v.Format(time.RFC3339Nano)
+
+	// Handle sql.Null* if a driver returns them
+	case sql.NullString:
+		if v.Valid {
+			return v.String
+		} else {
+			return "NULL"
+		}
+	case sql.NullInt64:
+		if v.Valid {
+			return strconv.FormatInt(v.Int64, 10)
+		} else {
+			return "NULL"
+		}
+	case sql.NullFloat64:
+		if v.Valid {
+			return strconv.FormatFloat(v.Float64, 'f', -1, 64)
+		} else {
+			return "NULL"
+		}
+	case sql.NullBool:
+		if v.Valid {
+			return strconv.FormatBool(v.Bool)
+		} else {
+			return "NULL"
+		}
+	case sql.NullTime:
+		if v.Valid {
+			return v.Time.Format(time.RFC3339Nano)
+		} else {
+			return "NULL"
+		}
+
+		// Fallback
+	default:
+		// Also handle pointers just in case
+		switch pv := val.(type) {
+		case *string:
+			if pv != nil {
+				return *pv
+			} else {
+				return "NULL"
+			}
+		case *int64:
+			if pv != nil {
+				return strconv.FormatInt(*pv, 10)
+			} else {
+				return "NULL"
+			}
+		case *float64:
+			if pv != nil {
+				return strconv.FormatFloat(*pv, 'f', -1, 64)
+			} else {
+				return "NULL"
+			}
+		case *time.Time:
+			if pv != nil {
+				return pv.Format(time.RFC3339Nano)
+			} else {
+				return "NULL"
+			}
+		default:
+			return fmt.Sprint(val)
+		}
+	}
+
+}
+
 // RunQuery executes a query on the specified connection
-func (s *DBConnectionService) RunQuery(connectionID string, query string) ([]columns, [][]string, error) {
+func (s *DBConnectionService) RunQuery(connectionID string, query string) (error, []columns, [][]string) {
 	// Find the connection
 	var connection DBConnection
 	found := false
@@ -178,7 +272,7 @@ func (s *DBConnectionService) RunQuery(connectionID string, query string) ([]col
 	}
 
 	if !found {
-		return nil, nil, fmt.Errorf("connection not found")
+		return fmt.Errorf("connection not found"), nil, nil
 	}
 
 	// Connect to the database
@@ -195,18 +289,18 @@ func (s *DBConnectionService) RunQuery(connectionID string, query string) ([]col
 			connection.Username, connection.Password, connection.Host, connection.Port, connection.Database)
 		db, err = sql.Open("mysql", connStr)
 	default:
-		return nil, nil, fmt.Errorf("unsupported database type: %s", connection.Type)
+		return fmt.Errorf("unsupported database type: %s", connection.Type), nil, nil
 	}
 
 	if err != nil {
-		return nil, nil, err
+		return err, nil, nil
 	}
 	defer db.Close()
 
 	// Execute the query
 	rows, err := db.Query(query)
 	if err != nil {
-		return nil, nil, err
+		return err, nil, nil
 	}
 	defer rows.Close()
 
@@ -214,7 +308,7 @@ func (s *DBConnectionService) RunQuery(connectionID string, query string) ([]col
 	cols, err := rows.Columns()
 	colTypes, err := rows.ColumnTypes()
 	if err != nil {
-		return nil, nil, err
+		return err, nil, nil
 	}
 
 	types := make([]columns, len(cols))
@@ -241,7 +335,7 @@ func (s *DBConnectionService) RunQuery(connectionID string, query string) ([]col
 
 		// Scan the row into the valuePtrs
 		if err := rows.Scan(valuePtrs...); err != nil {
-			return nil, nil, err
+			return err, nil, nil
 		}
 
 		// Convert each value to string and add to the row
@@ -251,7 +345,7 @@ func (s *DBConnectionService) RunQuery(connectionID string, query string) ([]col
 			if v == nil {
 				row[i] = "NULL"
 			} else {
-				row[i] = fmt.Sprintf("%v", v)
+				row[i] = convertToString(v)
 			}
 		}
 
@@ -261,85 +355,8 @@ func (s *DBConnectionService) RunQuery(connectionID string, query string) ([]col
 
 	// Check for errors from iterating over rows
 	if err := rows.Err(); err != nil {
-		return nil, nil, err
+		return err, nil, nil
 	}
 
-	return types, data, nil
-}
-
-// GetDatabaseTables returns all tables in the database for a given connection
-func (s *DBConnectionService) GetDatabaseTables(connectionID string) ([]TableInfo, error) {
-	// Find the connection
-	var connection DBConnection
-	found := false
-	for _, conn := range s.connections {
-		if conn.ID == connectionID {
-			connection = conn
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		return nil, fmt.Errorf("connection not found")
-	}
-
-	// Connect to the database
-	var db *sql.DB
-	var err error
-
-	switch connection.Type {
-	case "postgres":
-		connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-			connection.Host, connection.Port, connection.Username, connection.Password, connection.Database)
-		db, err = sql.Open("postgres", connStr)
-	case "mysql":
-		connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",
-			connection.Username, connection.Password, connection.Host, connection.Port, connection.Database)
-		db, err = sql.Open("mysql", connStr)
-	default:
-		return nil, fmt.Errorf("unsupported database type: %s", connection.Type)
-	}
-
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
-	// Query to get tables based on database type
-	var query string
-	switch connection.Type {
-	case "postgres":
-		query = `SELECT table_name FROM information_schema.tables 
-				WHERE table_schema = 'public' 
-				ORDER BY table_name`
-	case "mysql":
-		query = fmt.Sprintf(`SELECT table_name FROM information_schema.tables 
-				WHERE table_schema = '%s' 
-				ORDER BY table_name`, connection.Database)
-	}
-
-	// Execute the query
-	rows, err := db.Query(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	// Collect table names
-	var tables []TableInfo
-	for rows.Next() {
-		var tableName string
-		if err := rows.Scan(&tableName); err != nil {
-			return nil, err
-		}
-		tables = append(tables, TableInfo{Name: tableName})
-	}
-
-	// Check for errors from iterating over rows
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return tables, nil
+	return nil, types, data
 }
