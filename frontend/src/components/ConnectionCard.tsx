@@ -1,5 +1,5 @@
 import {Button} from '@/components/ui/button'
-import {Card, CardContent, CardFooter, CardHeader, CardTitle} from '@/components/ui/card'
+import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card'
 import {
     AlertDialog,
     AlertDialogCancel,
@@ -21,6 +21,7 @@ type Props = {
     onDelete: (connection: DBConnection) => void | Promise<void>
 }
 
+// @ts-expect-error - To be used later
 function DeleteButton({connection, onConfirm}: { connection: DBConnection, onConfirm: () => void }) {
 
     return (
@@ -51,34 +52,27 @@ export function ConnectionCard({connection, onConnect, onDelete}: Props) {
     const logoAlt = connection.type === 'postgres' ? 'PostgreSQL logo' : 'MySQL logo'
 
     return (
-        <Card>
+        <Card onClick={() => onConnect(connection)} className={"cursor-pointer"}>
             <div className={"flex"}>
-                <div className={"flex-1 flex flex-col gap-4"}>
-                    <CardHeader className="flex flex-row items-start gap-4">
-                        <div className="grid gap-1">
-                            <CardTitle>{connection.name}</CardTitle>
+                <div className={"flex-1"}>
+                    <CardHeader className="flex flex-row gap-4 flex-1 items-center">
+                            <CardTitle className={"text-xl"}>{connection.name}</CardTitle>
                             {/* Removed textual database type per requirements */}
-                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-2 text-sm">
-                            <div><span className="font-medium">Host:</span> {connection.host}</div>
-                            <div><span className="font-medium">Port:</span> {connection.port}</div>
-                            <div><span className="font-medium">Database:</span> {connection.database}</div>
-                            <div><span className="font-medium">Username:</span> {connection.username}</div>
-                        </div>
+                        <div><span className="text-sm text-muted-foreground">{connection.host}:{connection.port}</span></div>
                     </CardContent>
                 </div>
-                <img src={logoSrc} alt={logoAlt} className="h-16 w-16  object-contain pe-6" />
+                <img src={logoSrc} alt={logoAlt} className="h-12 w-12  object-contain pe-6" />
 
             </div>
 
-            <CardFooter className="flex gap-2">
-                <Button onClick={() => onConnect(connection)} className="flex-1">
-                    Connect
-                </Button>
-                <DeleteButton connection={connection} onConfirm={() => onDelete(connection)}/>
-            </CardFooter>
+            {/*<CardFooter className="flex gap-2">*/}
+            {/*    <Button onClick={() => onConnect(connection)} className="flex-1">*/}
+            {/*        Connect*/}
+            {/*    </Button>*/}
+            {/*    <DeleteButton connection={connection} onConfirm={() => onDelete(connection)}/>*/}
+            {/*</CardFooter>*/}
         </Card>
     )
 }
