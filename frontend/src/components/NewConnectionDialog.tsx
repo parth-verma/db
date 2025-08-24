@@ -113,43 +113,6 @@ export function NewConnectionDialog({open, onOpenChange, onCreated}: NewConnecti
         },
     })
 
-    //
-    //
-    // const handleCreateConnection = async () => {
-    //   if (!newConnection.name || !newConnection.host || !newConnection.username || !newConnection.database) {
-    //     toast.error('Validation Error', {
-    //       description: 'Please fill in all required fields',
-    //     })
-    //     return
-    //   }
-    //
-    //   try {
-    //     const newConn: DatabaseConnection = {
-    //       id: Date.now().toString(),
-    //       name: newConnection.name as string,
-    //       type: newConnection.type as string,
-    //       host: newConnection.host as string,
-    //       port: newConnection.port as number,
-    //       username: newConnection.username as string,
-    //       password: (newConnection.password as string) || '',
-    //       database: newConnection.database as string,
-    //     }
-    //
-    //     await DBConnectionService.TestConnection(newConn)
-    //     await DBConnectionService.SaveConnection(newConn)
-    //     await queryClient.invalidateQueries({ queryKey: ['connections'] })
-    //
-    //     onOpenChange(false)
-    //     toast.success('Success', { description: 'Connection created successfully' })
-    //     onCreated?.(newConn)
-    //   } catch (error) {
-    //     console.error('Failed to create connection:', error)
-    //     toast.error('Error', {
-    //       description: 'Failed to create database connection',
-    //     })
-    //   }
-    // }
-
     return (
         <Dialog open={open} onOpenChange={(open)=> {
             if (!open) {

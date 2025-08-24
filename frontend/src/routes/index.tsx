@@ -1,4 +1,3 @@
-import { createFileRoute } from '@tanstack/react-router'
 import {SidebarInset, SidebarProvider} from "@/components/ui/sidebar.tsx";
 import {AppSidebar} from "@/components/app-sidebar.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -36,11 +35,8 @@ loader.config({ monaco });
 
 loader.init()
 
-export const Route = createFileRoute('/')({
-    component: Index,
-})
 
-function Index() {
+export default function Index() {
     // State for storing query results
     const [columnInfo, setColumnInfo] = useState<columns[]>([]);
     const [rowData, setRowData] = useState<string[][]>([]);

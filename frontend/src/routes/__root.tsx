@@ -1,11 +1,10 @@
-import {createRootRoute, Outlet} from '@tanstack/react-router'
-import {TanStackRouterDevtools} from '@tanstack/react-router-devtools'
 import { useMediaQuery } from '@custom-react-hooks/use-media-query';
 import {clsx} from "clsx";
 import {PanelLeftIcon, PanelRightIcon} from "lucide-react";
 import {Button} from "@/components/ui/button"
+import Index from "@/routes/index.tsx";
 
-function Root() {
+export default function Root() {
     const isDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
     return (
         <>
@@ -21,14 +20,9 @@ function Root() {
                     </div>
                 </div>
                 <div className={"overflow-hidden flex-1 min-h-0 min-w-svw flex flex-col"}>
-                    <Outlet/>
+                    <Index/>
                 </div>
             </div>
-            <TanStackRouterDevtools/>
         </>
     )
 }
-
-export const Route = createRootRoute({
-    component: Root
-})

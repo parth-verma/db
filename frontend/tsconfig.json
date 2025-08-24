@@ -23,10 +23,11 @@
     "baseUrl": ".",
     "paths": {
       "@main": ["./bindings/changeme"],
+      "@/images": ["./assets/images"],
       "@/*": ["./src/*"],
     },
     "strictNullChecks": true
   },
-  "include": ["src", "bindings"],
+  "include": ["src", "bindings", "assets"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
