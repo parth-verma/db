@@ -24,9 +24,10 @@
     "paths": {
       "@main": ["./bindings/changeme"],
       "@/images": ["./assets/images"],
-      "@/*": ["./src/*"],
+      "@/*": ["./src/*"]
     },
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "esModuleInterop": true
   },
   "include": ["src", "bindings", "assets"],
   "references": [{ "path": "./tsconfig.node.json" }]
