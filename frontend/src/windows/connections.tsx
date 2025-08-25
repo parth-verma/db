@@ -11,6 +11,7 @@ import {QueryClient, QueryClientProvider, useQuery, useQueryClient, useMutation}
 import {DBConnectionService, type DBConnection} from '@main'
 import {ConnectionCard} from '@/components/ConnectionCard'
 import NewConnectionDialog from '@/components/NewConnectionDialog'
+import {PlusIcon} from "lucide-react";
 
 type DatabaseConnection = DBConnection;
 
@@ -75,13 +76,15 @@ function ConnectionsPage() {
     return (
         <div className={clsx("min-h-svh min-w-svw bg-background", isDarkMode && "dark")}>
             <Toaster/>
-            <div className="container mx-auto py-8">
-                <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-3xl font-bold">Database Connections</h1>
-                    <Button onClick={() => setIsDialogOpen(true)}>New Connection</Button>
-                    <NewConnectionDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
+            <div className="h-[38px]">
+                <div className="flex h-full items-center justify-end px-3 gap-2 border-b">
+                    <Button variant={'outline'}  size="icon" className="text-white cursor-pointer size-6 rounded-sm justify-self-end" onClick={() => setIsDialogOpen(true)}>
+                        <PlusIcon/>
+                    </Button>
+                        <NewConnectionDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
                 </div>
-
+            </div>
+            <div className="px-8 mx-auto py-8 overflow-y-auto max-h-[calc(100vh-38px)]">
                 {isLoading ? (
                     <div className="flex justify-center items-center h-64">
                         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
@@ -93,7 +96,7 @@ function ConnectionsPage() {
                         <Button onClick={() => setIsDialogOpen(true)}>Create Connection</Button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-4 gap-6">
+                    <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-6">
                         {connections.map(connection => (
                             <ConnectionCard
                                 key={connection.id}

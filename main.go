@@ -56,6 +56,8 @@ func main() {
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInset,
 		},
+		MinWidth:         600,
+		MinHeight:        250,
 		BackgroundColour: application.NewRGB(27, 38, 54),
 		URL:              "/connections.html",
 	})

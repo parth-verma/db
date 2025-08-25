@@ -8,12 +8,14 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import PostgresLogo from '@/images/PostgresLogo.png'
 import MySQLLogo from '@/images/MySQLLogo.png'
 
 import type {DBConnection} from '@main'
+import {ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger} from "@/components/ui/context-menu.tsx";
+import {useMediaQuery} from "@custom-react-hooks/use-media-query";
+import {useState} from "react";
 
 type Props = {
     connection: DBConnection
@@ -21,15 +23,11 @@ type Props = {
     onDelete: (connection: DBConnection) => void | Promise<void>
 }
 
-// @ts-expect-error - To be used later
-function DeleteButton({connection, onConfirm}: { connection: DBConnection, onConfirm: () => void }) {
+function DeleteButton({connection, onConfirm, open, onOpenChange}: { connection: DBConnection, onConfirm: () => void, open: boolean, onOpenChange: (open: boolean) => void }) {
 
     return (
-        <AlertDialog>
-            <AlertDialogTrigger asChild>
-                <Button className="flex-1" variant="outline">Delete</Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
+        <AlertDialog open={open} onOpenChange={onOpenChange}>
+            <AlertDialogContent onClick={(e) => e.stopPropagation()}>
                 <AlertDialogHeader>
                     <AlertDialogTitle>Delete Connection</AlertDialogTitle>
                     <AlertDialogDescription>Are you sure you want to delete {connection.name}?</AlertDialogDescription>
@@ -50,29 +48,35 @@ export function ConnectionCard({connection, onConnect, onDelete}: Props) {
         ? PostgresLogo
         : MySQLLogo
     const logoAlt = connection.type === 'postgres' ? 'PostgreSQL logo' : 'MySQL logo'
+    const isDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
+    const [open, setOpen] = useState(false)
 
     return (
-        <Card onClick={() => onConnect(connection)} className={"cursor-pointer"}>
-            <div className={"flex"}>
-                <div className={"flex-1"}>
-                    <CardHeader className="flex flex-row gap-4 flex-1 items-center">
-                            <CardTitle className={"text-xl"}>{connection.name}</CardTitle>
-                            {/* Removed textual database type per requirements */}
-                    </CardHeader>
-                    <CardContent>
-                        <div><span className="text-sm text-muted-foreground">{connection.host}:{connection.port}</span></div>
-                    </CardContent>
-                </div>
-                <img src={logoSrc} alt={logoAlt} className="h-12 w-12  object-contain pe-6" />
+        <ContextMenu>
+            <ContextMenuTrigger>
+                <Card onClick={() => onConnect(connection)}
+                      className={"cursor-pointer hover:bg-sidebar-accent hover:border-accent"}>
+                    <div className={"flex max-w-full overflow-hidden"}>
+                        <div className={"flex-1 max-w-full overflow-hidden"}>
+                            <CardHeader className="flex flex-row gap-4 flex-1 items-center max-w-full overflow-hidden">
+                                <CardTitle className={"text-xl"}>{connection.name}</CardTitle>
+                            </CardHeader>
+                            <CardContent className={"max-w-full overflow-hidden"}>
+                                <span
+                                    className="text-sm text-muted-foreground text-ellipsis block overflow-hidden max-w-full"
+                                    title={`${connection.host}:${connection.port}`}>{connection.host}:{connection.port}</span>
+                            </CardContent>
+                        </div>
+                        <img src={logoSrc} alt={logoAlt} className="h-12 w-12  object-contain pe-6"/>
+                    </div>
+                    <DeleteButton connection={connection} onConfirm={() => onDelete(connection)} open={open} onOpenChange={setOpen}/>
+                </Card>
+            </ContextMenuTrigger>
+            <ContextMenuContent className={isDarkMode ? "dark" : ""}>
+                <ContextMenuItem onClick={()=>onConnect(connection)}>Connect</ContextMenuItem>
+                <ContextMenuItem onClick={()=>setOpen(true)} variant={'destructive'}>Delete</ContextMenuItem>
+            </ContextMenuContent>
 
-            </div>
-
-            {/*<CardFooter className="flex gap-2">*/}
-            {/*    <Button onClick={() => onConnect(connection)} className="flex-1">*/}
-            {/*        Connect*/}
-            {/*    </Button>*/}
-            {/*    <DeleteButton connection={connection} onConfirm={() => onDelete(connection)}/>*/}
-            {/*</CardFooter>*/}
-        </Card>
+        </ContextMenu>
     )
 }
