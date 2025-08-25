@@ -29,7 +29,7 @@ export function PGTables({ connectionId, parentId }: NodeProps) {
   if (isError) {
     return (
       <SidebarMenuItem>
-        <SidebarMenuButton className="ml-12">
+        <SidebarMenuButton>
           Error: {error instanceof Error ? error.message : String(error)}
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -39,7 +39,7 @@ export function PGTables({ connectionId, parentId }: NodeProps) {
   if (isLoading) {
     return (
       <SidebarMenuItem>
-        <SidebarMenuButton className="ml-12">
+        <SidebarMenuButton>
           Loading tables...
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -49,7 +49,7 @@ export function PGTables({ connectionId, parentId }: NodeProps) {
   if (tables.length === 0) {
     return (
       <SidebarMenuItem>
-        <SidebarMenuButton className="ml-12">No tables</SidebarMenuButton>
+        <SidebarMenuButton>No tables</SidebarMenuButton>
       </SidebarMenuItem>
     );
   }
@@ -59,7 +59,6 @@ export function PGTables({ connectionId, parentId }: NodeProps) {
       {tables.map((table, idx) => (
         <SidebarMenuButton
           key={`${key}.${idx}`}
-          className="ml-12"
           onClick={() => {
             if (window.sqlEditor) {
               window.sqlEditor.setValue(

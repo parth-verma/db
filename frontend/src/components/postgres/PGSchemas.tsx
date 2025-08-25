@@ -41,19 +41,19 @@ export function PGSchemas({ connectionId, parentId }: NodeProps) {
     <>
       {isLoading && !isError ? (
         <SidebarMenuItem>
-          <SidebarMenuButton className="ml-8">
+          <SidebarMenuButton>
             Loading schemas...
           </SidebarMenuButton>
         </SidebarMenuItem>
       ) : isError ? (
         <SidebarMenuItem>
-          <SidebarMenuButton className="ml-8">
+          <SidebarMenuButton>
             Error: {error instanceof Error ? error.message : String(error)}
           </SidebarMenuButton>
         </SidebarMenuItem>
       ) : schemas.length === 0 ? (
         <SidebarMenuItem>
-          <SidebarMenuButton className="ml-8">No schemas</SidebarMenuButton>
+          <SidebarMenuButton>No schemas</SidebarMenuButton>
         </SidebarMenuItem>
       ) : (
         schemas.map((schema) => (
@@ -65,7 +65,7 @@ export function PGSchemas({ connectionId, parentId }: NodeProps) {
             }
           >
             <CollapsibleTrigger asChild>
-              <SidebarMenuButton className="ml-8">
+              <SidebarMenuButton>
                 <ChevronRight className="transition-transform" />
                 {schema}
               </SidebarMenuButton>
