@@ -6,7 +6,6 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarRail,
 } from "@/components/ui/sidebar";
 import { PGTopItem } from "./postgres/PGTopItem";
 
@@ -30,7 +29,6 @@ export function PostgresSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarRail />
     </Sidebar>
   );
 }

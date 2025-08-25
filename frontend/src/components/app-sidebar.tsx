@@ -10,7 +10,6 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarRail,
 } from "@/components/ui/sidebar";
 import { DBConnectionService, type DBConnection } from "@main";
 import { PostgresSidebar } from "./sidebar-postgres";
@@ -61,7 +60,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
-        <SidebarRail />
       </Sidebar>
     );
   }
@@ -91,7 +89,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
-        <SidebarRail />
       </Sidebar>
     );
   }

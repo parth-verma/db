@@ -23,7 +23,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
-  SidebarRail,
 } from "@/components/ui/sidebar";
 
 import { DBConnectionService } from "@main";
@@ -207,7 +206,6 @@ export function MySQLSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarRail />
     </Sidebar>
   );
 }
