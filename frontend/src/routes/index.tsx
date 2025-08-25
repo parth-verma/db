@@ -1,4 +1,4 @@
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar.tsx";
+import { SidebarProvider } from "@/components/ui/sidebar.tsx";
 import { AppSidebar } from "@/components/app-sidebar.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -96,9 +96,14 @@ export default function Index() {
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
+      <ResizablePanelGroup direction="horizontal" className={"flex-1"}>
+        <ResizablePanel minSize={20} defaultSize={20} className={"min-h-full"}>
+          <SidebarProvider>
+            <AppSidebar />
+          </SidebarProvider>
+        </ResizablePanel>
+        <ResizableHandle />
+        <ResizablePanel minSize={30} defaultSize={80}>
         <Tabs defaultValue="query" className="w-full h-full bg-muted">
           <TabsList className={"w-full rounded-none"}>
             <TabsTrigger
@@ -161,7 +166,7 @@ export default function Index() {
             </ResizablePanelGroup>
           </TabsContent>
         </Tabs>
-      </SidebarInset>
-    </SidebarProvider>
+        </ResizablePanel>
+      </ResizablePanelGroup>
   );
 }
