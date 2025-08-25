@@ -73,7 +73,7 @@ export function PGDatabases({ connectionId }: NodeProps) {
           }}
         >
           <CollapsibleTrigger asChild>
-            <SidebarMenuButton className="ml-4">
+            <SidebarMenuButton>
               <ChevronRight className="transition-transform" />
               {db}
             </SidebarMenuButton>
