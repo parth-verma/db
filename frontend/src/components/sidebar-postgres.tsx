@@ -1,13 +1,23 @@
-import * as React from "react"
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarRail } from "@/components/ui/sidebar"
-import { PGTopItem } from "./postgres/PGTopItem"
+import * as React from "react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarRail,
+} from "@/components/ui/sidebar";
+import { PGTopItem } from "./postgres/PGTopItem";
 
 interface PostgresSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  connectionId: string
-  connectionName: string
+  connectionId: string;
 }
 
-export function PostgresSidebar({ connectionId, connectionName, ...props }: PostgresSidebarProps) {
+export function PostgresSidebar({
+  connectionId,
+  ...props
+}: PostgresSidebarProps) {
   return (
     <Sidebar {...props}>
       <SidebarContent>
@@ -22,5 +32,5 @@ export function PostgresSidebar({ connectionId, connectionName, ...props }: Post
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

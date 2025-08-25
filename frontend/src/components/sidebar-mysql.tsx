@@ -1,13 +1,18 @@
-import * as React from "react"
-import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
-import { ChevronRight, Database, Table as TableIcon, Loader2 } from "lucide-react"
+import * as React from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  ChevronRight,
+  Database,
+  Table as TableIcon,
+  Loader2,
+} from "lucide-react";
 
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible"
+} from "@/components/ui/collapsible";
 import {
   Sidebar,
   SidebarContent,
@@ -19,48 +24,63 @@ import {
   SidebarMenuItem,
   SidebarMenuSub,
   SidebarRail,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
-import { DBConnectionService } from "@main"
+import { DBConnectionService } from "@main";
 
 interface MySQLSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  connectionId: string
-  connectionName: string
+  connectionId: string;
+  connectionName: string;
 }
 
-function MySQLTables({ connectionId, dbName }: { connectionId: string; dbName: string }) {
-  const { data: tables = [], isLoading, isError, error } = useQuery({
+function MySQLTables({
+  connectionId,
+  dbName,
+}: {
+  connectionId: string;
+  dbName: string;
+}) {
+  const {
+    data: tables = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["tables", connectionId, dbName],
     queryFn: async () => {
-      const esc = (s: string) => s.replace(/`/g, "``").replace(/'/g, "''")
+      const esc = (s: string) => s.replace(/`/g, "``").replace(/'/g, "''");
       const sql = `SELECT table_name FROM information_schema.tables WHERE table_schema = '${esc(dbName)}' ORDER BY table_name`;
-      const [_, rows] = await DBConnectionService.RunQuery(connectionId, sql)
-      return (rows || []).map((r: any[]) => ({ name: String(r[0]) }))
+      const [_, rows] = await DBConnectionService.RunQuery(connectionId, sql);
+      return (rows || []).map((r: string[]) => ({ name: String(r[0]) }));
     },
     enabled: !!connectionId && !!dbName,
     staleTime: 30_000,
-  })
+  });
 
   if (isLoading) {
     return (
       <SidebarMenuItem>
-        <SidebarMenuButton className="ml-8">Loading tables...</SidebarMenuButton>
+        <SidebarMenuButton className="ml-8">
+          Loading tables...
+        </SidebarMenuButton>
       </SidebarMenuItem>
-    )
+    );
   }
   if (isError) {
     return (
       <SidebarMenuItem>
-        <SidebarMenuButton className="ml-8">Error: {error instanceof Error ? error.message : String(error)}</SidebarMenuButton>
+        <SidebarMenuButton className="ml-8">
+          Error: {error instanceof Error ? error.message : String(error)}
+        </SidebarMenuButton>
       </SidebarMenuItem>
-    )
+    );
   }
   if (tables.length === 0) {
     return (
       <SidebarMenuItem>
         <SidebarMenuButton className="ml-8">No tables</SidebarMenuButton>
       </SidebarMenuItem>
-    )
+    );
   }
   return (
     <>
@@ -69,8 +89,10 @@ function MySQLTables({ connectionId, dbName }: { connectionId: string; dbName: s
           key={`${dbName}.${idx}`}
           className="ml-8"
           onClick={() => {
-            if ((window as any).sqlEditor) {
-              ;(window as any).sqlEditor.setValue(`SELECT * FROM \`${dbName}\`.\`${table.name}\` LIMIT 100;`)
+            if (window.sqlEditor) {
+              window.sqlEditor.setValue(
+                `SELECT * FROM \`${dbName}\`.\`${table.name}\` LIMIT 100;`,
+              );
             }
           }}
         >
@@ -79,22 +101,31 @@ function MySQLTables({ connectionId, dbName }: { connectionId: string; dbName: s
         </SidebarMenuButton>
       ))}
     </>
-  )
+  );
 }
 
-export function MySQLSidebar({ connectionId, connectionName, ...props }: MySQLSidebarProps) {
-  const [opened, setOpened] = useState<Record<string, boolean>>({})
+export function MySQLSidebar({
+  connectionId,
+  connectionName,
+  ...props
+}: MySQLSidebarProps) {
+  const [opened, setOpened] = useState<Record<string, boolean>>({});
 
-  const { data: databases = [], isLoading, isError, error } = useQuery<string[]>({
+  const {
+    data: databases = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery<string[]>({
     queryKey: ["databases", connectionId],
     queryFn: async () => {
       const sql = `SELECT schema_name FROM information_schema.schemata ORDER BY schema_name`;
-      const [_, rows] = await DBConnectionService.RunQuery(connectionId, sql)
-      return (rows || []).map((r: any[]) => String(r[0]))
+      const [_, rows] = await DBConnectionService.RunQuery(connectionId, sql);
+      return (rows || []).map((r: string[]) => String(r[0]));
     },
     enabled: !!connectionId,
     staleTime: 30_000,
-  })
+  });
 
   return (
     <Sidebar {...props}>
@@ -113,14 +144,13 @@ export function MySQLSidebar({ connectionId, connectionName, ...props }: MySQLSi
               ) : isError ? (
                 <SidebarMenuItem>
                   <SidebarMenuButton>
-                    Error: {error instanceof Error ? error.message : String(error)}
+                    Error:{" "}
+                    {error instanceof Error ? error.message : String(error)}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ) : databases.length === 0 ? (
                 <SidebarMenuItem>
-                  <SidebarMenuButton>
-                    No databases found
-                  </SidebarMenuButton>
+                  <SidebarMenuButton>No databases found</SidebarMenuButton>
                 </SidebarMenuItem>
               ) : (
                 <>
@@ -143,7 +173,10 @@ export function MySQLSidebar({ connectionId, connectionName, ...props }: MySQLSi
                               key={dbName}
                               className="group/collapsible [&[data-state=open]>button>svg:first-child]:rotate-90"
                               onOpenChange={(open) => {
-                                setOpened((prev) => ({ ...prev, [dbName]: open }))
+                                setOpened((prev) => ({
+                                  ...prev,
+                                  [dbName]: open,
+                                }));
                               }}
                             >
                               <CollapsibleTrigger asChild>
@@ -155,7 +188,10 @@ export function MySQLSidebar({ connectionId, connectionName, ...props }: MySQLSi
                               <CollapsibleContent>
                                 <SidebarMenuSub>
                                   {opened[dbName] ? (
-                                    <MySQLTables connectionId={connectionId} dbName={dbName} />
+                                    <MySQLTables
+                                      connectionId={connectionId}
+                                      dbName={dbName}
+                                    />
                                   ) : null}
                                 </SidebarMenuSub>
                               </CollapsibleContent>
@@ -173,5 +209,5 @@ export function MySQLSidebar({ connectionId, connectionName, ...props }: MySQLSi
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }
