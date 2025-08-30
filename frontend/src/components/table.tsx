@@ -91,8 +91,8 @@ function TableCore({
 
   return (
     <div className="min-w-full overflow-auto max-h-full relative" ref={tableContainerRef}>
-      <table className={"min-w-full grid"}  >
-        <thead className="bg-secondary top-0 z-10 ">
+      <table className={"min-w-full grid relative"}  >
+        <thead className="bg-secondary top-0 z-10 sticky ">
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}  className={"grid w-full"} style={{gridTemplateColumns: columnTemplate}}>
               {headerGroup.headers.map((header, index) => (
