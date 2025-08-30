@@ -42,7 +42,12 @@ export function Table({
 
     return columnInfo.map((col): ColumnDef<unknown> => ({
       accessorKey: col.Name,
-      header: col.Name,
+      header: () => (
+        <div className="flex flex-col">
+          <span>{col.Name}</span>
+          <span className="text-[11px] leading-tight text-muted-foreground">{col.Type}</span>
+        </div>
+      ),
       cell: (info) => info.getValue(),
       footer: (info) => info.column.id,
       meta: {
