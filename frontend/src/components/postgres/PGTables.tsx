@@ -1,8 +1,19 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Table as TableIcon } from "lucide-react";
-import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
+import { ChevronRight, Table as TableIcon } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+} from "@/components/ui/sidebar";
 import { DBConnectionService } from "@main";
 import { type NodeProps } from "./PGTopItem";
+import { PGColumns } from "./PGColumns";
 
 // parentId: `${database}::${schema}`
 export function PGTables({ connectionId, parentId }: NodeProps) {
@@ -25,6 +36,10 @@ export function PGTables({ connectionId, parentId }: NodeProps) {
     enabled: !!connectionId && !!db && !!schema,
     staleTime: 30_000,
   });
+
+
+  const [openedTable, setOpenedTable] = useState<Record<string, boolean>>({});
+  const [openedColumns, setOpenedColumns] = useState<Record<string, boolean>>({});
 
   if (isError) {
     return (
@@ -54,23 +69,62 @@ export function PGTables({ connectionId, parentId }: NodeProps) {
     );
   }
 
+
   return (
     <>
-      {tables.map((table, idx) => (
-        <SidebarMenuButton
-          key={`${key}.${idx}`}
-          onClick={() => {
-            if (window.sqlEditor) {
-              window.sqlEditor.setValue(
-                `SELECT * FROM ${schema}.${table.name} LIMIT 100;`,
-              );
+      {tables.map((table, idx) => {
+        const tableKey = `${key}.${table.name}`;
+        return (
+          <Collapsible
+            key={tableKey}
+            className="group/collapsible [&[data-state=open]>button>svg:first-child]:rotate-90"
+            onOpenChange={(open) =>
+              setOpenedTable((prev) => ({ ...prev, [tableKey]: open }))
             }
-          }}
-        >
-          <TableIcon />
-          {table.name}
-        </SidebarMenuButton>
-      ))}
+          >
+            <CollapsibleTrigger asChild>
+              <SidebarMenuButton
+                onClick={() => {
+                  /* Keep previous click-to-fill behavior on icon click not needed; now node expands. */
+                }}
+              >
+                <ChevronRight className="transition-transform" />
+                <TableIcon />
+                {table.name}
+              </SidebarMenuButton>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarMenuSub>
+                {openedTable[tableKey] ? (
+                  <Collapsible
+                    className="group/collapsible [&[data-state=open]>button>svg:first-child]:rotate-90"
+                    onOpenChange={(open) =>
+                      setOpenedColumns((prev) => ({ ...prev, [tableKey]: open }))
+                    }
+                  >
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton>
+                        <ChevronRight className="transition-transform" />
+                        Columns
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {openedColumns[tableKey] ? (
+                          <PGColumns
+                            connectionId={connectionId}
+                            parentId={`${db}::${schema}::${table.name}`}
+                          />
+                        ) : null}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </Collapsible>
+                ) : null}
+              </SidebarMenuSub>
+            </CollapsibleContent>
+          </Collapsible>
+        );
+      })}
     </>
   );
 }
