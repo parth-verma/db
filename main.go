@@ -49,7 +49,8 @@ func main() {
 	// 'Mac' options tailor the window when running on macOS.
 	// 'BackgroundColour' is the background colour of the window.
 	// 'URL' is the URL that will be loaded into the webview.
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Database Connections",
 		Mac: application.MacWindow{
 			InvisibleTitleBarHeight: 50,

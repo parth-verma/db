@@ -4,8 +4,9 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import React from "react";
+import React, {MouseEvent, useRef} from "react";
 import { columns } from "../../bindings/changeme/internal";
+import {clsx} from "clsx";
 
 // Define a type for our dynamic row data
 type DynamicRow = Record<string, string>;
@@ -19,6 +20,7 @@ export function Table({
 }) {
   // Convert the 2D array of strings to an array of objects
   // where each object represents a row with column names as keys
+  const tableRef = useRef<HTMLTableElement>(null)
   const processedData = React.useMemo(() => {
     if (!columnInfo.length || !rowData.length) return defaultData;
 
@@ -53,32 +55,67 @@ export function Table({
     data: processedData,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    enableColumnResizing: true,
+    columnResizeMode: "onChange",
   });
 
+  const onMouseDown = (handler: React.EventHandler<MouseEvent>) => {
+    return (e: MouseEvent<HTMLSpanElement>) => {
+      handler(e);
+      if (!tableRef.current) return;
+      tableRef.current.style.setProperty('cursor', 'col-resize');
+      tableRef.current.style.setProperty('user-select', 'none');
+      tableRef.current.style.setProperty('-webkit-user-select', 'none');
+
+      window.addEventListener('mouseup', () => {
+        if (!tableRef.current) return;
+        tableRef.current.style.removeProperty('user-select');
+        tableRef.current.style.removeProperty('-webkit-user-select');
+        tableRef.current.style.removeProperty('cursor');
+      }, {once: true})
+
+    }
+  }
+
   return (
-    <div className="w-full">
-      <table className={"min-w-full"}>
-        <thead>
+    <div className="w-full overflow-auto max-h-full">
+      <table className={"min-w-full"} ref={tableRef}>
+        <thead className="bg-secondary">
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
-                <th key={header.id}>
+                <th
+                  key={header.id}
+                  className={clsx("bg-secondary px-3 py-2 text-left text-sm font-medium text-secondary-foreground border-b border-border relative")}
+                  style={{width: header.getSize()}}
+                >
                   {header.isPlaceholder
                     ? null
                     : flexRender(
                         header.column.columnDef.header,
                         header.getContext(),
                       )}
+                  {header.column.getCanResize() && (
+                      <span
+                          onMouseDown={onMouseDown(header.getResizeHandler())}
+                          onTouchStart={header.getResizeHandler()}
+                          className={'cursor-col-resize h-5 px-2 touch-none select-none absolute top-2/4 right-0 transform -translate-y-1/2'}
+                      >
+                        <div className={'w-0.5 h-full bg-border'}></div>
+                      </span>
+                  )}
                 </th>
               ))}
             </tr>
           ))}
         </thead>
-        <tbody>
+        <tbody className="divide-y divide-border">
           {table.getRowModel().rows.map((row) => (
-            <tr key={row.id}>
+            <tr key={row.id} className={"hover:bg-muted"}>
               {row.getVisibleCells().map((cell) => (
-                <td key={cell.id}>
+                <td key={cell.id} className={"px-3 py-2 text-sm"} style={{
+                  width: cell.column.getSize()
+                }}>
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
               ))}
