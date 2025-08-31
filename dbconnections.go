@@ -304,58 +304,73 @@ func (s *DBConnectionService) RunQuery(connectionID string, query string) (error
 	}
 	defer rows.Close()
 
-	// Get column information
-	cols, err := rows.Columns()
-	colTypes, err := rows.ColumnTypes()
-	if err != nil {
-		return err, nil, nil
-	}
+	var types []columns
+	var data [][]string
 
-	types := make([]columns, len(cols))
-	for i, col := range cols {
-		types[i] = columns{
-			Name: col,
-			Type: colTypes[i].DatabaseTypeName(),
+	for {
+		// Get column information for the current result set
+		cols, err := rows.Columns()
+		if err != nil {
+			return err, nil, nil
 		}
-	}
-
-	// Initialize data as a slice to hold rows of data
-	data := make([][]string, 0)
-
-	// Prepare a slice to hold a single row's values
-	values := make([]interface{}, len(cols))
-	valuePtrs := make([]interface{}, len(cols))
-
-	// Scan rows
-	for rows.Next() {
-		// Initialize pointers to each item in the values slice
-		for i := range values {
-			valuePtrs[i] = &values[i]
-		}
-
-		// Scan the row into the valuePtrs
-		if err := rows.Scan(valuePtrs...); err != nil {
+		colTypes, err := rows.ColumnTypes()
+		if err != nil {
 			return err, nil, nil
 		}
 
-		// Convert each value to string and add to the row
-		row := make([]string, len(cols))
-		for i, v := range values {
-			// Convert interface{} to string
-			if v == nil {
-				row[i] = "NULL"
-			} else {
-				row[i] = convertToString(v)
+		// Prepare columns metadata for this result set
+		types = make([]columns, len(cols))
+		for i, col := range cols {
+			types[i] = columns{
+				Name: col,
+				Type: colTypes[i].DatabaseTypeName(),
 			}
 		}
 
-		// Add the row to the data
-		data = append(data, row)
-	}
+		// Initialize data for this result set (overwrite to keep only last set)
+		data = make([][]string, 0)
 
-	// Check for errors from iterating over rows
-	if err := rows.Err(); err != nil {
-		return err, nil, nil
+		// Prepare a slice to hold a single row's values
+		values := make([]interface{}, len(cols))
+		valuePtrs := make([]interface{}, len(cols))
+
+		// Scan rows in the current result set
+		for rows.Next() {
+			// Initialize pointers to each item in the values slice
+			for i := range values {
+				valuePtrs[i] = &values[i]
+			}
+
+			// Scan the row into the valuePtrs
+			if err := rows.Scan(valuePtrs...); err != nil {
+				return err, nil, nil
+			}
+
+			// Convert each value to string and add to the row
+			row := make([]string, len(cols))
+			for i, v := range values {
+				if v == nil {
+					row[i] = "NULL"
+				} else {
+					row[i] = convertToString(v)
+				}
+			}
+
+			// Add the row to the data for this result set
+			data = append(data, row)
+		}
+
+		// Check for errors from iterating over rows in this result set
+		if err := rows.Err(); err != nil {
+			return err, nil, nil
+		}
+
+		// Move to the next result set if available; if not, break and return the last processed set
+		if rows.NextResultSet() {
+			// continue to process the next result set
+			continue
+		}
+		break
 	}
 
 	return nil, types, data
