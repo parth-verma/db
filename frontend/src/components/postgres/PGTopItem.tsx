@@ -1,5 +1,5 @@
 import { ChevronRight, Database } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Collapsible,
   CollapsibleContent,
@@ -12,6 +12,12 @@ import {
 } from "@/components/ui/sidebar";
 import { DBConnectionService, type DBConnection } from "@main";
 import { PGDatabases } from "./PGDatabases";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 
 export interface NodeProps {
   connectionId: string;
@@ -19,6 +25,7 @@ export interface NodeProps {
 }
 
 export function PGTopItem({ connectionId }: NodeProps) {
+  const queryClient = useQueryClient();
   // Reuse connections query to derive the display name
   const { data: conns = [] } = useQuery<DBConnection[]>({
     queryKey: ["connections"],
@@ -34,13 +41,28 @@ export function PGTopItem({ connectionId }: NodeProps) {
         className="group/collapsible [&[data-state=open]>button>svg:first-child]:rotate-90"
         defaultOpen={true}
       >
-        <CollapsibleTrigger asChild>
-          <SidebarMenuButton>
-            <ChevronRight className="transition-transform" />
-            <Database />
-            {connectionName}
-          </SidebarMenuButton>
-        </CollapsibleTrigger>
+        <ContextMenu>
+          <ContextMenuTrigger asChild>
+            <CollapsibleTrigger asChild>
+              <SidebarMenuButton>
+                <ChevronRight className="transition-transform" />
+                <Database />
+                {connectionName}
+              </SidebarMenuButton>
+            </CollapsibleTrigger>
+          </ContextMenuTrigger>
+          <ContextMenuContent>
+            <ContextMenuItem
+              onClick={() =>
+                queryClient.invalidateQueries({
+                  queryKey: ["databases", connectionId],
+                })
+              }
+            >
+              Refresh
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
         <CollapsibleContent>
           <SidebarMenuSub>
             <PGDatabases connectionId={connectionId} parentId={connectionId} />

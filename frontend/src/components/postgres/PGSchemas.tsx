@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
 import {
   Collapsible,
@@ -14,11 +14,18 @@ import {
 import { DBConnectionService } from "@main";
 import { type NodeProps } from "./PGTopItem";
 import { PGTables } from "./PGTables";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 
 // parentId: database name
 export function PGSchemas({ connectionId, parentId }: NodeProps) {
   const database = parentId || "";
   const [opened, setOpened] = useState<Record<string, boolean>>({});
+  const queryClient = useQueryClient();
 
   const {
     data: schemas = [],
@@ -64,12 +71,27 @@ export function PGSchemas({ connectionId, parentId }: NodeProps) {
               setOpened((prev) => ({ ...prev, [schema]: open }))
             }
           >
-            <CollapsibleTrigger asChild>
-              <SidebarMenuButton>
-                <ChevronRight className="transition-transform" />
-                {schema}
-              </SidebarMenuButton>
-            </CollapsibleTrigger>
+            <ContextMenu>
+              <ContextMenuTrigger asChild>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton>
+                    <ChevronRight className="transition-transform" />
+                    {schema}
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+              </ContextMenuTrigger>
+              <ContextMenuContent>
+                <ContextMenuItem
+                  onClick={() =>
+                    queryClient.invalidateQueries({
+                      queryKey: ["tables", connectionId, database, schema],
+                    })
+                  }
+                >
+                  Refresh
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
             <CollapsibleContent>
               <SidebarMenuSub>
                 {opened[schema] ? (
