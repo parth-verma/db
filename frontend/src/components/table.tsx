@@ -48,6 +48,7 @@ export function Table({
           <span className="text-[11px] leading-tight text-muted-foreground">{col.Type}</span>
         </div>
       ),
+      minSize: col.Name.length * 7 + 24,
       cell: (info) => info.getValue(),
       footer: (info) => info.column.id,
       meta: {
@@ -55,10 +56,6 @@ export function Table({
       },
     }));
   }, [columnInfo]);
-
-  console.count('render table');
-
-  // Use the processed data
 
   const table = useReactTable({
     data: processedData,
@@ -116,7 +113,7 @@ function TableCore({
                       <span
                           onMouseDown={onMouseDown(header.getResizeHandler())}
                           onTouchStart={header.getResizeHandler()}
-                          className={'cursor-col-resize h-5 px-2 touch-none select-none absolute top-2/4 right-0 transform -translate-y-1/2'}
+                          className={'cursor-col-resize h-5 px-2 touch-none select-none absolute top-2/4 -right-2.5 transform -translate-y-1/2 z-10'}
                       >
                         <div className={'w-0.5 h-full bg-border'}></div>
                       </span>
