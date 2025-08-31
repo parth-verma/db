@@ -56,22 +56,19 @@ export default function Index() {
   }
 
   function handleRunQuery() {
-    if (editorRef.current) {
-      const query = editorRef.current.getValue();
-      const connectionId = localStorage.getItem("activeConnectionId");
-
-      // Reset state
-      setIsLoading(true);
-      setError(null);
-
-      if (!connectionId) {
-        // If no active connection, redirect to connections page
-        window.location.href = "/connections.html";
-        return;
-      }
-
-      // Call the backend function with the active connection ID
-      DBConnectionService.RunQuery(connectionId, query)
+    if (!editorRef.current) {
+      return;
+    }
+    const query = editorRef.current.getValue();
+    const connectionId = localStorage.getItem("activeConnectionId");
+    setIsLoading(true);
+    setError(null);
+    if (!connectionId) {
+      // If no active connection, redirect to connections page
+      window.location.href = "/connections.html";
+      return;
+    }
+    DBConnectionService.RunQuery(connectionId, query)
         .then(([columns, data]) => {
           // Update state with the results
           setColumnInfo(columns || []);
@@ -92,7 +89,6 @@ export default function Index() {
         .finally(() => {
           setIsLoading(false);
         });
-    }
   }
 
   return (
@@ -151,17 +147,30 @@ export default function Index() {
               </ResizablePanel>
               <ResizableHandle />
               <ResizablePanel minSize={20} defaultSize={80}>
-                {isLoading ? (
-                  <div className="flex items-center justify-center h-full">
-                    <p>Loading results...</p>
-                  </div>
-                ) : error ? (
-                  <div className="flex items-center justify-center h-full text-red-500">
-                    <p>Error: {error}</p>
-                  </div>
-                ) : (
+                <div className="relative h-full">
                   <Table columnInfo={columnInfo} rowData={rowData} />
-                )}
+                  {(isLoading || error) && (
+                    <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-20">
+                      {/* Error banner on top of overlay if present */}
+                      {error && (
+                        <div className="absolute top-0 left-0 right-0">
+                          <div className="m-4 rounded border border-red-300 bg-red-50 text-red-700 px-4 py-2 shadow">
+                            Error: {error}
+                          </div>
+                        </div>
+                      )}
+                      {/* Center loading indicator */}
+                      {isLoading && (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <div className="flex items-center gap-3 text-muted-foreground">
+                            <span className="h-5 w-5 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent"></span>
+                            <span>Loading results...</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </ResizablePanel>
             </ResizablePanelGroup>
           </TabsContent>

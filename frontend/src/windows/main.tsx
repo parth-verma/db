@@ -1,4 +1,3 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
 import "../index.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -12,10 +11,8 @@ const rootElement = document.getElementById("root")!;
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
-    <React.StrictMode>
       <QueryClientProvider client={queryClient}>
         <Root />
       </QueryClientProvider>
-    </React.StrictMode>,
   );
 }

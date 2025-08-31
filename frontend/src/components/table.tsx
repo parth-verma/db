@@ -92,7 +92,7 @@ function TableCore({
   const columnTemplate = table.getAllColumns().slice(0,-1).map(col => col.getSize()+'px').join(' ') + ' 1fr';
 
   return (
-    <div className="min-w-full overflow-auto max-h-full relative" ref={tableContainerRef}>
+    <div className="min-w-full overflow-auto max-h-full relative h-full" ref={tableContainerRef}>
       <table className={"min-w-full grid relative"}  >
         <thead className="bg-secondary top-0 z-10 sticky ">
           {table.getHeaderGroups().map((headerGroup) => (
@@ -140,7 +140,7 @@ function TableBody({ table, tableContainerRef }: TableBodyProps) {
   // Important: Keep the row virtualizer in the lowest component possible to avoid unnecessary re-renders.
   const rowVirtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
     count: rows.length,
-    estimateSize: () => 33, //estimate row height for accurate scrollbar dragging
+    estimateSize: () => 24, //estimate row height for accurate scrollbar dragging
     getScrollElement: () => tableContainerRef.current,
     //measure dynamic row height, except in firefox because it measures table border height incorrectly
     measureElement:
