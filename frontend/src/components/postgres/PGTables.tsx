@@ -19,6 +19,9 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
+  ContextMenuSub,
+  ContextMenuSubTrigger,
+  ContextMenuSubContent,
 } from "@/components/ui/context-menu";
 
 // parentId: `${database}::${schema}`
@@ -104,6 +107,39 @@ export function PGTables({ connectionId, parentId }: NodeProps) {
                 </CollapsibleTrigger>
               </ContextMenuTrigger>
               <ContextMenuContent>
+                <ContextMenuSub>
+                  <ContextMenuSubTrigger>Show data</ContextMenuSubTrigger>
+                  <ContextMenuSubContent>
+                    <ContextMenuItem
+                      onClick={() => {
+                        const quoteIdent = (s: string) => `"${s.replace(/"/g, '""')}"`;
+                        const fqtn = `${quoteIdent(schema)}.${quoteIdent(table.name)}`;
+                        const sql = `SELECT * FROM ${fqtn};`;
+                        const ed = (window as unknown as { sqlEditor?: { setValue?: (s: string) => void; focus?: () => void } }).sqlEditor;
+                        if (ed?.setValue) {
+                          ed.setValue(sql);
+                          ed.focus?.();
+                        }
+                      }}
+                    >
+                      Show all data
+                    </ContextMenuItem>
+                    <ContextMenuItem
+                      onClick={() => {
+                        const quoteIdent = (s: string) => `"${s.replace(/"/g, '""')}"`;
+                        const fqtn = `${quoteIdent(schema)}.${quoteIdent(table.name)}`;
+                        const sql = `SELECT * FROM ${fqtn} LIMIT 1000;`;
+                        const ed = (window as unknown as { sqlEditor?: { setValue?: (s: string) => void; focus?: () => void } }).sqlEditor;
+                        if (ed?.setValue) {
+                          ed.setValue(sql);
+                          ed.focus?.();
+                        }
+                      }}
+                    >
+                      Show 1000 data
+                    </ContextMenuItem>
+                  </ContextMenuSubContent>
+                </ContextMenuSub>
                 <ContextMenuItem
                   onClick={() =>
                     queryClient.invalidateQueries({
