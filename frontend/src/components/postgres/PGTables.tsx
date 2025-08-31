@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronRight, Table as TableIcon } from "lucide-react";
 import {
   Collapsible,
@@ -14,11 +14,18 @@ import {
 import { DBConnectionService } from "@main";
 import { type NodeProps } from "./PGTopItem";
 import { PGColumns } from "./PGColumns";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 
 // parentId: `${database}::${schema}`
 export function PGTables({ connectionId, parentId }: NodeProps) {
   const [db, schema] = (parentId || "::").split("::");
   const key = `${db}::${schema}`;
+  const queryClient = useQueryClient();
 
   const {
     data: tables = [],
@@ -82,17 +89,32 @@ export function PGTables({ connectionId, parentId }: NodeProps) {
               setOpenedTable((prev) => ({ ...prev, [tableKey]: open }))
             }
           >
-            <CollapsibleTrigger asChild>
-              <SidebarMenuButton
-                onClick={() => {
-                  /* Keep previous click-to-fill behavior on icon click not needed; now node expands. */
-                }}
-              >
-                <ChevronRight className="transition-transform" />
-                <TableIcon />
-                {table.name}
-              </SidebarMenuButton>
-            </CollapsibleTrigger>
+            <ContextMenu>
+              <ContextMenuTrigger asChild>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton
+                    onClick={() => {
+                      /* Keep previous click-to-fill behavior on icon click not needed; now node expands. */
+                    }}
+                  >
+                    <ChevronRight className="transition-transform" />
+                    <TableIcon />
+                    {table.name}
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+              </ContextMenuTrigger>
+              <ContextMenuContent>
+                <ContextMenuItem
+                  onClick={() =>
+                    queryClient.invalidateQueries({
+                      queryKey: ["columns", connectionId, db, schema, table.name],
+                    })
+                  }
+                >
+                  Refresh
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
             <CollapsibleContent>
               <SidebarMenuSub>
                 {openedTable[tableKey] ? (
@@ -102,12 +124,27 @@ export function PGTables({ connectionId, parentId }: NodeProps) {
                       setOpenedColumns((prev) => ({ ...prev, [tableKey]: open }))
                     }
                   >
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton>
-                        <ChevronRight className="transition-transform" />
-                        Columns
-                      </SidebarMenuButton>
-                    </CollapsibleTrigger>
+                    <ContextMenu>
+                      <ContextMenuTrigger asChild>
+                        <CollapsibleTrigger asChild>
+                          <SidebarMenuButton>
+                            <ChevronRight className="transition-transform" />
+                            Columns
+                          </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                      </ContextMenuTrigger>
+                      <ContextMenuContent>
+                        <ContextMenuItem
+                          onClick={() =>
+                            queryClient.invalidateQueries({
+                              queryKey: ["columns", connectionId, db, schema, table.name],
+                            })
+                          }
+                        >
+                          Refresh
+                        </ContextMenuItem>
+                      </ContextMenuContent>
+                    </ContextMenu>
                     <CollapsibleContent>
                       <SidebarMenuSub>
                         {openedColumns[tableKey] ? (

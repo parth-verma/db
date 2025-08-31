@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
 import {
   Collapsible,
@@ -14,9 +14,16 @@ import {
 import { DBConnectionService } from "@main";
 import { type NodeProps } from "./PGTopItem";
 import { PGSchemas } from "./PGSchemas";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 
 export function PGDatabases({ connectionId }: NodeProps) {
   const [opened, setOpened] = useState<Record<string, boolean>>({});
+  const queryClient = useQueryClient();
 
   const {
     data: databases = [],
@@ -72,12 +79,27 @@ export function PGDatabases({ connectionId }: NodeProps) {
             setOpened((prev) => ({ ...prev, [db]: open }));
           }}
         >
-          <CollapsibleTrigger asChild>
-            <SidebarMenuButton>
-              <ChevronRight className="transition-transform" />
-              {db}
-            </SidebarMenuButton>
-          </CollapsibleTrigger>
+          <ContextMenu>
+            <ContextMenuTrigger asChild>
+              <CollapsibleTrigger asChild>
+                <SidebarMenuButton>
+                  <ChevronRight className="transition-transform" />
+                  {db}
+                </SidebarMenuButton>
+              </CollapsibleTrigger>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuItem
+                onClick={() =>
+                  queryClient.invalidateQueries({
+                    queryKey: ["schemas", connectionId, db],
+                  })
+                }
+              >
+                Refresh
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
           <CollapsibleContent>
             <SidebarMenuSub>
               {opened[db] ? (
