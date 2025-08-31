@@ -114,7 +114,7 @@ export default function Index() {
           </TabsList>
           <TabsContent className={"text-foreground"} value="query">
             <ResizablePanelGroup direction="vertical">
-              <ResizablePanel minSize={20} defaultSize={20}>
+              <ResizablePanel minSize={20} defaultSize={20} collapsible collapsedSize={0}>
                 <div className="relative">
                   <Editor
                     language={"sql"}
@@ -146,7 +146,7 @@ export default function Index() {
                 </div>
               </ResizablePanel>
               <ResizableHandle />
-              <ResizablePanel minSize={20} defaultSize={80}>
+              <ResizablePanel minSize={20} defaultSize={80} collapsible collapsedSize={0}>
                 <div className="relative h-full">
                   <Table columnInfo={columnInfo} rowData={rowData} />
                   {(isLoading || error) && (
