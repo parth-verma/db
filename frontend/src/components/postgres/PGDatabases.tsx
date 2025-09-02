@@ -36,7 +36,6 @@ export function PGDatabases({ connectionId }: NodeProps) {
       // Postgres: cluster-level list via pg_database; MySQL: schemata
       const sql = `SELECT datname FROM pg_database WHERE datistemplate = false AND datallowconn = true ORDER BY datname`;
       const [_, rows] = await DBConnectionService.RunQuery(connectionId, sql);
-      console.log(rows);
       return (rows || []).map((r: string[]) => String(r[0]));
     },
     enabled: !!connectionId,
