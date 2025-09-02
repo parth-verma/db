@@ -6,11 +6,10 @@ includes:
   darwin: ./build/darwin/Taskfile.yml
   linux: ./build/linux/Taskfile.yml
 
+vars:
   APP_NAME: "db"
   BIN_DIR: "bin"
   VITE_PORT: '{{.WAILS_VITE_PORT | default 9245}}'
-  VERSION:
-    sh: cog get-version | sed 's/^v//'
 
 tasks:
   build:
@@ -37,28 +36,26 @@ tasks:
     desc: "Analyze commits & bump version using Cocogitto"
     cmds:
       - cog bump --auto
-      - echo "Bumped to version $(cog get-version)"
+      - echo "Bumped to version $(cog -v get-version)"
+      - git push
+      - git push origin --tags
 
   changelog:
     desc: "Update changelog using Cocogitto"
-    vars:
-      TAG_VERSION:
-        sh: cog get-version
     cmds:
       - mkdir -p .temp
       - cog changelog --at {{.TAG_VERSION}} > .temp/CHANGELOG.md
-    requires:
-      vars: [ TAG_VERSION ]
+    vars:
+      TAG_VERSION:
+        sh: echo $(cog -v get-version)
 
   github:release:
     desc: "Create draft GitHub release with changelog"
     vars:
       TAG_VERSION:
-        sh: cog get-version
+        sh: echo $(cog -v get-version)
     cmds:
       - gh release create {{.TAG_VERSION}} --draft --title "Release {{.TAG_VERSION}}" --notes-file .temp/CHANGELOG.md
-    requires:
-      vars: [ TAG_VERSION ]
 
 
   github:upload:
@@ -70,21 +67,17 @@ tasks:
   github:mac:upload:
     vars:
       TAG_VERSION:
-        sh: cog get-version
+        sh: echo $(cog -v get-version)
     cmds:
       - gh release upload {{.TAG_VERSION}} build/bin/*.dmg
-    requires:
-      vars: [ TAG_VERSION ]
 
   github:publish:
     desc: "Mark GitHub release as published"
     vars:
       TAG_VERSION:
-        sh: cog get-version
+        sh: echo $(cog -v get-version)
     cmds:
       - gh release edit {{.TAG_VERSION}} --draft=false
-    requires:
-      vars: [ TAG_VERSION ]
 
   precheck:
     desc: "Ensure release is on main branch and working tree has no unstaged changes"

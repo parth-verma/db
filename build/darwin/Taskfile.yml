@@ -56,8 +56,9 @@ tasks:
     cmds:
       - plutil -replace CFBundleShortVersionString -string "{{.TAG_VERSION}}" build/darwin/Info.plist
       - plutil -replace CFBundleVersion -string "{{.TAG_VERSION}}" build/darwin/Info.plist
-    requires:
-      vars: [TAG_VERSION]
+    vars:
+      TAG_VERSION:
+        sh: echo $(cog -v get-version)
 
   package:universal:
     summary: Packages darwin universal binary (arm64 + amd64)
