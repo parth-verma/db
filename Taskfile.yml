@@ -64,7 +64,7 @@ tasks:
     cmds:
       - task: "github:{{OS}}:upload"
 
-  github:mac:upload:
+  github:darwin:upload:
     vars:
       TAG_VERSION:
         sh: echo $(cog -v get-version)
