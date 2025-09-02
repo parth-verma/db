@@ -6,10 +6,11 @@ includes:
   darwin: ./build/darwin/Taskfile.yml
   linux: ./build/linux/Taskfile.yml
 
-vars:
   APP_NAME: "db"
   BIN_DIR: "bin"
   VITE_PORT: '{{.WAILS_VITE_PORT | default 9245}}'
+  VERSION:
+    sh: cog get-version | sed 's/^v//'
 
 tasks:
   build:
@@ -32,3 +33,73 @@ tasks:
     cmds:
       - wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}
 
+  bump:
+    desc: "Analyze commits & bump version using Cocogitto"
+    cmds:
+      - cog bump --auto
+      - echo "Bumped to version $(cog get-version)"
+
+  changelog:
+    desc: "Update changelog using Cocogitto"
+    vars:
+      TAG_VERSION:
+        sh: cog get-version
+    cmds:
+      - mkdir -p .temp
+      - cog changelog --at {{.TAG_VERSION}} > .temp/CHANGELOG.md
+    requires:
+      vars: [ TAG_VERSION ]
+
+  github:release:
+    desc: "Create draft GitHub release with changelog"
+    vars:
+      TAG_VERSION:
+        sh: cog get-version
+    cmds:
+      - gh release create {{.TAG_VERSION}} --draft --title "Release {{.TAG_VERSION}}" --notes-file .temp/CHANGELOG.md
+    requires:
+      vars: [ TAG_VERSION ]
+
+
+  github:upload:
+    desc: "Upload build artifacts to GitHub release"
+    deps: [ package ]
+    cmds:
+      - task: "github:{{OS}}:upload"
+
+  github:mac:upload:
+    vars:
+      TAG_VERSION:
+        sh: cog get-version
+    cmds:
+      - gh release upload {{.TAG_VERSION}} build/bin/*.dmg
+    requires:
+      vars: [ TAG_VERSION ]
+
+  github:publish:
+    desc: "Mark GitHub release as published"
+    vars:
+      TAG_VERSION:
+        sh: cog get-version
+    cmds:
+      - gh release edit {{.TAG_VERSION}} --draft=false
+    requires:
+      vars: [ TAG_VERSION ]
+
+  precheck:
+    desc: "Ensure release is on main branch and working tree has no unstaged changes"
+    cmds:
+      - test "$(git rev-parse --abbrev-ref HEAD)" = "main" || (echo "Releases must be performed from the 'main' branch." && exit 1)
+      - rm -rf bin
+
+  release:
+    desc: "Full release pipeline"
+    cmds:
+      - task: precheck
+      - task: bump
+      - task: changelog
+      - task: github:release
+      - task: github:upload
+      - task: github:publish
+      - echo "🎉 Release completed!"
+      - rm -rf .temp
