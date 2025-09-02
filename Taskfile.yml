@@ -69,7 +69,7 @@ tasks:
       TAG_VERSION:
         sh: echo $(cog -v get-version)
     cmds:
-      - gh release upload {{.TAG_VERSION}} build/bin/*.dmg
+      - gh release upload {{.TAG_VERSION}} bin/*.dmg
 
   github:publish:
     desc: "Mark GitHub release as published"
