@@ -23,12 +23,14 @@ import {
   ContextMenuSubTrigger,
   ContextMenuSubContent,
 } from "@/components/ui/context-menu";
+import { useEditorStores } from "@/stores/tabs";
 
 // parentId: `${database}::${schema}`
 export function PGTables({ connectionId, parentId }: NodeProps) {
   const [db, schema] = (parentId || "::").split("::");
   const key = `${db}::${schema}`;
   const queryClient = useQueryClient();
+  const { openTab } = useEditorStores();
 
   const {
     data: tables = [],
@@ -47,9 +49,10 @@ export function PGTables({ connectionId, parentId }: NodeProps) {
     staleTime: 30_000,
   });
 
-
   const [openedTable, setOpenedTable] = useState<Record<string, boolean>>({});
-  const [openedColumns, setOpenedColumns] = useState<Record<string, boolean>>({});
+  const [openedColumns, setOpenedColumns] = useState<Record<string, boolean>>(
+    {},
+  );
 
   if (isError) {
     return (
@@ -64,9 +67,7 @@ export function PGTables({ connectionId, parentId }: NodeProps) {
   if (isLoading) {
     return (
       <SidebarMenuItem>
-        <SidebarMenuButton>
-          Loading tables...
-        </SidebarMenuButton>
+        <SidebarMenuButton>Loading tables...</SidebarMenuButton>
       </SidebarMenuItem>
     );
   }
@@ -78,7 +79,6 @@ export function PGTables({ connectionId, parentId }: NodeProps) {
       </SidebarMenuItem>
     );
   }
-
 
   return (
     <>
@@ -95,11 +95,7 @@ export function PGTables({ connectionId, parentId }: NodeProps) {
             <ContextMenu>
               <ContextMenuTrigger asChild>
                 <CollapsibleTrigger asChild>
-                  <SidebarMenuButton
-                    onClick={() => {
-                      /* Keep previous click-to-fill behavior on icon click not needed; now node expands. */
-                    }}
-                  >
+                  <SidebarMenuButton>
                     <ChevronRight className="transition-transform" />
                     <TableIcon />
                     {table.name}
@@ -112,28 +108,27 @@ export function PGTables({ connectionId, parentId }: NodeProps) {
                   <ContextMenuSubContent>
                     <ContextMenuItem
                       onClick={() => {
-                        const quoteIdent = (s: string) => `"${s.replace(/"/g, '""')}"`;
+                        const quoteIdent = (s: string) =>
+                          `"${s.replace(/"/g, '""')}"`;
                         const fqtn = `${quoteIdent(schema)}.${quoteIdent(table.name)}`;
                         const sql = `SELECT * FROM ${fqtn};`;
-                        const ed = (window as unknown as { sqlEditor?: { setValue?: (s: string) => void; focus?: () => void } }).sqlEditor;
-                        if (ed?.setValue) {
-                          ed.setValue(sql);
-                          ed.focus?.();
-                        }
+
+                        openTab({
+                          editorValue: sql,
+                        });
                       }}
                     >
                       Show all data
                     </ContextMenuItem>
                     <ContextMenuItem
                       onClick={() => {
-                        const quoteIdent = (s: string) => `"${s.replace(/"/g, '""')}"`;
+                        const quoteIdent = (s: string) =>
+                          `"${s.replace(/"/g, '""')}"`;
                         const fqtn = `${quoteIdent(schema)}.${quoteIdent(table.name)}`;
                         const sql = `SELECT * FROM ${fqtn} LIMIT 1000;`;
-                        const ed = (window as unknown as { sqlEditor?: { setValue?: (s: string) => void; focus?: () => void } }).sqlEditor;
-                        if (ed?.setValue) {
-                          ed.setValue(sql);
-                          ed.focus?.();
-                        }
+                        openTab({
+                          editorValue: sql,
+                        });
                       }}
                     >
                       Show 1000 data
@@ -143,7 +138,13 @@ export function PGTables({ connectionId, parentId }: NodeProps) {
                 <ContextMenuItem
                   onClick={() =>
                     queryClient.invalidateQueries({
-                      queryKey: ["columns", connectionId, db, schema, table.name],
+                      queryKey: [
+                        "columns",
+                        connectionId,
+                        db,
+                        schema,
+                        table.name,
+                      ],
                     })
                   }
                 >
@@ -157,7 +158,10 @@ export function PGTables({ connectionId, parentId }: NodeProps) {
                   <Collapsible
                     className="group/collapsible [&[data-state=open]>button>svg:first-child]:rotate-90"
                     onOpenChange={(open) =>
-                      setOpenedColumns((prev) => ({ ...prev, [tableKey]: open }))
+                      setOpenedColumns((prev) => ({
+                        ...prev,
+                        [tableKey]: open,
+                      }))
                     }
                   >
                     <ContextMenu>
@@ -173,7 +177,13 @@ export function PGTables({ connectionId, parentId }: NodeProps) {
                         <ContextMenuItem
                           onClick={() =>
                             queryClient.invalidateQueries({
-                              queryKey: ["columns", connectionId, db, schema, table.name],
+                              queryKey: [
+                                "columns",
+                                connectionId,
+                                db,
+                                schema,
+                                table.name,
+                              ],
                             })
                           }
                         >

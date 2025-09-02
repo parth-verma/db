@@ -3,8 +3,12 @@ import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { DBConnectionService } from "@main";
 import { type NodeProps } from "./PGTopItem";
 import { Key, ExternalLink } from "lucide-react";
-import {clsx} from "clsx";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { clsx } from "clsx";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -22,7 +26,15 @@ export function PGColumns({ connectionId, parentId }: NodeProps) {
     isLoading,
     isError,
     error,
-  } = useQuery<{ name: string; dataType: string; isPrimary: boolean; isForeign: boolean; fkTarget?: string }[]>({
+  } = useQuery<
+    {
+      name: string;
+      dataType: string;
+      isPrimary: boolean;
+      isForeign: boolean;
+      fkTarget?: string;
+    }[]
+  >({
     queryKey: ["columns", connectionId, db, schema, table],
     queryFn: async () => {
       const esc = (s: string) => s.replace(/'/g, "''");
@@ -104,7 +116,10 @@ export function PGColumns({ connectionId, parentId }: NodeProps) {
           String(r[3]).toLowerCase() === "true";
         const fkSchema = String(r[4] || "");
         const fkTable = String(r[5] || "");
-        const fkTarget = fkSchema && fkTable ? `${fkSchema}.${fkTable}` : (fkTable || fkSchema || undefined);
+        const fkTarget =
+          fkSchema && fkTable
+            ? `${fkSchema}.${fkTable}`
+            : fkTable || fkSchema || undefined;
         return { name, dataType, isPrimary, isForeign, fkTarget };
       });
     },
@@ -144,9 +159,7 @@ export function PGColumns({ connectionId, parentId }: NodeProps) {
         <ContextMenu key={`${schema}.${table}.col.${idx}`}>
           <ContextMenuTrigger asChild>
             <SidebarMenuButton className={"gap-3"}>
-              <span>
-              {col.name}
-                </span>
+              <span>{col.name}</span>
               {col.isPrimary && (
                 <Tooltip delayDuration={200}>
                   <TooltipTrigger asChild>
@@ -161,10 +174,12 @@ export function PGColumns({ connectionId, parentId }: NodeProps) {
                     <ExternalLink className={clsx("h-4 w-4 text-blue-500")} />
                   </TooltipTrigger>
                   <TooltipContent side="right">
-                    {col.fkTarget ? `References ${col.fkTarget}` : "Foreign key"}
+                    {col.fkTarget
+                      ? `References ${col.fkTarget}`
+                      : "Foreign key"}
                   </TooltipContent>
                 </Tooltip>
-              )} 
+              )}
             </SidebarMenuButton>
           </ContextMenuTrigger>
           <ContextMenuContent>

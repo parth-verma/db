@@ -94,12 +94,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }
 
   if (connectionType === "postgres") {
-    return (
-      <PostgresSidebar
-        connectionId={connectionId}
-        {...props}
-      />
-    );
+    return <PostgresSidebar connectionId={connectionId} {...props} />;
   }
   return (
     <MySQLSidebar

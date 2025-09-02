@@ -48,9 +48,7 @@ export function PGSchemas({ connectionId, parentId }: NodeProps) {
     <>
       {isLoading && !isError ? (
         <SidebarMenuItem>
-          <SidebarMenuButton>
-            Loading schemas...
-          </SidebarMenuButton>
+          <SidebarMenuButton>Loading schemas...</SidebarMenuButton>
         </SidebarMenuItem>
       ) : isError ? (
         <SidebarMenuItem>

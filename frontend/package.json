@@ -7,7 +7,7 @@
     "dev": "vite",
     "build:dev": "tsc && vite build --minify false --mode development",
     "build": "tsc && vite build --mode production",
-    "lint": "",
+    "lint": "prettier src --check --write",
     "preview": "vite preview",
     "prepare": "cd .. && husky frontend/.husky"
   },
@@ -36,10 +36,13 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-resizable-panels": "^3.0.3",
+    "react-scrollbars-custom": "^4.1.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
     "tw-animate-css": "^1.3.4",
-    "zod": "^4.1.0"
+    "use-callback-stable": "^1.0.2",
+    "zod": "^4.1.0",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@eslint/js": "^9.34.0",
