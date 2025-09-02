@@ -47,7 +47,17 @@ tasks:
         vars:
           PRODUCTION: "true"
     cmds:
+      - task: set:version
       - task: create:app:bundle
+      - task: sign
+
+  set:version:
+    summary: "Update Info.plist with bumped version"
+    cmds:
+      - plutil -replace CFBundleShortVersionString -string "{{.TAG_VERSION}}" build/darwin/Info.plist
+      - plutil -replace CFBundleVersion -string "{{.TAG_VERSION}}" build/darwin/Info.plist
+    requires:
+      vars: [TAG_VERSION]
 
   package:universal:
     summary: Packages darwin universal binary (arm64 + amd64)
@@ -68,3 +78,8 @@ tasks:
   run:
     cmds:
       - '{{.BIN_DIR}}/{{.APP_NAME}}'
+
+  sign:
+    summary: "Sign the app to generate DMG"
+    cmds:
+      - gon -log-level=info build/darwin/gon-sign.json
