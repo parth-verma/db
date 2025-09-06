@@ -31,6 +31,8 @@ export type NewConnectionDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreated?: (conn: DatabaseConnection) => void;
+  mode?: "create" | "edit";
+  initial?: DatabaseConnection | null;
 };
 
 const { fieldContext, formContext } = createFormHookContexts();
@@ -68,7 +70,7 @@ const postgresSchema = z.object({
 
 const schema = z.discriminatedUnion("type", [mysqlSchema, postgresSchema]);
 
-const defaultValues: z.input<typeof schema> = {
+const defaultCreateValues: z.input<typeof schema> = {
   name: "",
   type: "mysql",
   host: "",
@@ -82,28 +84,51 @@ export function NewConnectionDialog({
   open,
   onOpenChange,
   onCreated,
+  mode = "create",
+  initial,
 }: NewConnectionDialogProps) {
   const queryClient = useQueryClient();
-  const createConnectionMutation = useMutation({
-    mutationKey: ["create-connection"],
+
+  const usedDefaults: z.input<typeof schema> = initial
+    ? {
+        name: initial.name,
+        type: initial.type === "postgres" ? "postgres" : "mysql",
+        host: initial.host,
+        port: initial.port,
+        username: initial.username,
+        password: initial.password ?? "",
+        database: initial.database,
+      }
+    : defaultCreateValues;
+
+  const saveConnectionMutation = useMutation({
+    mutationKey: [mode === "edit" ? "edit-connection" : "create-connection"],
     mutationFn: async (value: DatabaseConnection) => {
-      await DBConnectionService.TestConnection(value);
-      await DBConnectionService.SaveConnection(value);
-      return value;
+      // Ensure ID is present when editing, even if caller forgot to pass it
+      const payload: DatabaseConnection = { ...value } as DatabaseConnection;
+      if (mode === "edit" && initial?.id && !payload.id) {
+        payload.id = initial.id;
+      }
+      await DBConnectionService.TestConnection(payload);
+      await DBConnectionService.SaveConnection(payload);
+      return payload;
     },
-    onSuccess: async (newConn) => {
+    onSuccess: async (conn) => {
       await queryClient.invalidateQueries({ queryKey: ["connections"] });
       onOpenChange(false);
       toast.success("Success", {
-        description: "Connection created successfully",
+        description:
+          mode === "edit"
+            ? "Connection updated successfully"
+            : "Connection created successfully",
       });
-      onCreated?.(newConn);
+      onCreated?.(conn);
     },
   });
+
   const form = useAppForm({
-    defaultValues,
+    defaultValues: usedDefaults,
     validators: {
-      // Pass a schema or function to validate
       onSubmit: schema,
     },
     onSubmitInvalid: (errors) => {
@@ -111,8 +136,8 @@ export function NewConnectionDialog({
     },
     onSubmit: async ({ value }) => {
       const port = value.port ?? (value.type === "postgres" ? 5432 : 3306);
-      const newConn: DatabaseConnection = {
-        id: crypto.randomUUID(),
+      const conn: DatabaseConnection = {
+        id: mode === "edit" && initial ? initial.id : crypto.randomUUID(),
         name: value.name,
         type: value.type as string,
         host: value.host as string,
@@ -121,7 +146,7 @@ export function NewConnectionDialog({
         password: value.password ?? "",
         database: value.database as string,
       };
-      await createConnectionMutation.mutateAsync(newConn);
+      await saveConnectionMutation.mutateAsync(conn);
     },
   });
 
@@ -146,7 +171,9 @@ export function NewConnectionDialog({
           }}
         >
           <DialogHeader>
-            <DialogTitle>Create New Connection</DialogTitle>
+            <DialogTitle>
+              {mode === "edit" ? "Edit Connection" : "Create New Connection"}
+            </DialogTitle>
             <DialogDescription>
               Enter the details for your database connection.
             </DialogDescription>
@@ -356,10 +383,12 @@ export function NewConnectionDialog({
             />
           </div>
 
-          {createConnectionMutation.isError ? (
+          {saveConnectionMutation.isError ? (
             <p className="text-sm text-red-500">
-              {(createConnectionMutation.error as any)?.message ??
-                "Failed to save connection"}
+              {(saveConnectionMutation.error as Error)?.message ??
+                (mode === "edit"
+                  ? "Failed to update connection"
+                  : "Failed to save connection")}
             </p>
           ) : null}
 
@@ -367,11 +396,15 @@ export function NewConnectionDialog({
             <form.AppForm>
               <form.Button
                 type={"submit"}
-                disabled={createConnectionMutation.isPending}
+                disabled={saveConnectionMutation.isPending}
               >
-                {createConnectionMutation.isPending
-                  ? "Creating..."
-                  : "Create Connection"}
+                {saveConnectionMutation.isPending
+                  ? mode === "edit"
+                    ? "Saving..."
+                    : "Creating..."
+                  : mode === "edit"
+                    ? "Save Changes"
+                    : "Create Connection"}
               </form.Button>
             </form.AppForm>
           </DialogFooter>

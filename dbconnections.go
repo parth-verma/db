@@ -111,6 +111,10 @@ func (s *DBConnectionService) SaveConnection(connection DBConnection) error {
 	// Check if the connection already exists
 	for i, conn := range s.connections {
 		if conn.ID == connection.ID {
+			// Preserve existing password if not provided in update
+			if connection.Password == "" {
+				connection.Password = conn.Password
+			}
 			// Update existing connection
 			s.connections[i] = connection
 			return s.saveConnections()
