@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file.
 
 - - -
+## 0.2.0 - 2025-09-06
+#### Features
+- Left pane toggle from top bar - (67bcad4) - Parth Verma
+- Display number of rows and time taken - (a3d22d0) - Parth Verma
+#### Miscellaneous Chores
+- refactor query editor tab - (10710db) - Parth Verma
+- fix release automation step - (065088b) - Parth Verma
+- release automation attemp#3 - (f418b94) - Parth Verma
+
+- - -
+
 ## 0.1.0 - 2025-09-02
 #### Bug Fixes
 - rows not appearing - (524c79e) - Parth Verma
