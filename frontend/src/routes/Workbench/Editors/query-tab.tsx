@@ -12,6 +12,7 @@ import * as monaco from "monaco-editor";
 // @ts-expect-error - Not sure how to fix these errors
 import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
 import {loader} from "@monaco-editor/react";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 self.MonacoEnvironment = {
     getWorker() {
@@ -149,7 +150,32 @@ export function QueryTab({tabId}) {
             >
                 <div className={"h-full flex flex-col max-h-full overflow-hidden"}>
                     <div className="relative grow shrink overflow-hidden">
-                        <Table columnInfo={columnInfo} rowData={rowData} ref={tableRef}/>
+                        <ErrorBoundary
+                            resetKeys={[columnInfo, rowData]}
+                            fallback={(error, reset) => (
+                                <div className="w-full h-full flex items-center justify-center p-4">
+                                    <div className="max-w-xl w-full border border-destructive/40 bg-destructive/10 text-destructive rounded p-4 shadow-sm">
+                                        <div className="font-semibold mb-1">Something went wrong while rendering results.</div>
+                                        <div className="text-sm opacity-90 break-words mb-3">{error.message}</div>
+                                        <div className="flex gap-2">
+                                            <button
+                                                className="px-3 py-1.5 text-sm rounded bg-foreground text-background hover:opacity-90"
+                                                onClick={() => {
+                                                    // Clear results and mutation error state, then reset boundary
+                                                    setResults([], []);
+                                                    runQueryMutation.reset();
+                                                    reset();
+                                                }}
+                                            >
+                                                Reset results
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        >
+                            <Table columnInfo={columnInfo} rowData={rowData} ref={tableRef}/>
+                        </ErrorBoundary>
                         {(runQueryMutation.isPending || runQueryMutation.isError) && (
                             <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-20">
                                 {/* Error banner on top of overlay if present */}

@@ -11,6 +11,7 @@ import {EditorTab} from "@/routes/Workbench/editor-tab.tsx";
 import {ScrollbarCustom} from "@/components/scroll-bar";
 import {lazy, Suspense} from "react";
 import {Spinner} from "@/components/ui/shadcn-io/spinner";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const QueryTab = lazy(() => import("@/routes/Workbench/Editors/query-tab.tsx").then(m => ({default: m.QueryTab})));
 
@@ -66,12 +67,13 @@ export default function Index() {
                     </TabsList>
                     {order.map((id) => (
                         <TabsContent key={id} className={"text-foreground"} value={id}>
-                            <Suspense fallback={<div className={"w-full h-full flex items-center justify-center"}>
-                                <Spinner variant={'infinite'} size={40}/>
-                            </div>}>
-                                <QueryTab key={id} tabId={id}/>
-                            </Suspense>
-
+                            <ErrorBoundary resetKeys={[id]}>
+                                <Suspense fallback={<div className={"w-full h-full flex items-center justify-center"}>
+                                    <Spinner variant={'infinite'} size={40}/>
+                                </div>}>
+                                    <QueryTab key={id} tabId={id}/>
+                                </Suspense>
+                            </ErrorBoundary>
                         </TabsContent>
                     ))}
                 </Tabs>
