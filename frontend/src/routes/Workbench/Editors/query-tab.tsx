@@ -1,6 +1,5 @@
 import {useEditorTabStore} from "@/stores/tabs";
 import {useRef} from "react";
-import * as monaco from "monaco-editor";
 import {DBConnectionService} from "@main";
 import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable.tsx";
 import {Editor} from "@monaco-editor/react";
@@ -9,6 +8,27 @@ import {PlayIcon} from "lucide-react";
 import {Table, TableRef} from "@/components/table.tsx";
 import {useMutation} from "@tanstack/react-query";
 import type {columns} from "../../../../bindings/changeme/internal.ts";
+import * as monaco from "monaco-editor";
+// @ts-expect-error - Not sure how to fix these errors
+import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
+import {loader} from "@monaco-editor/react";
+
+self.MonacoEnvironment = {
+    getWorker() {
+        return new editorWorker();
+    },
+};
+
+loader.config({ monaco });
+
+loader.init();
+
+// Declare global editor reference
+declare global {
+    interface Window {
+        sqlEditor: monaco.editor.IStandaloneCodeEditor | undefined;
+    }
+}
 
 export function QueryTab({tabId}) {
     // Tabs store integration
