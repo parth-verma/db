@@ -4,6 +4,7 @@ import {Tabs, TabsContent, TabsList} from "@/components/ui/tabs.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {PlusIcon} from "lucide-react";
 import {ResizableHandle, ResizablePanel, ResizablePanelGroup,} from "@/components/ui/resizable.tsx";
+import { useLeftPanel } from "@/contexts/left-panel-context";
 
 import {loader} from "@monaco-editor/react";
 import * as monaco from "monaco-editor";
@@ -34,10 +35,19 @@ loader.init();
 export default function Index() {
   // Tabs header state
   const { order, active, openTab, setActiveTab } = useEditorStores();
+  const { leftPanelRef } = useLeftPanel();
 
   return (
     <ResizablePanelGroup direction="horizontal" className={"flex-1"}>
-      <ResizablePanel minSize={20} defaultSize={20} className={"min-h-full"}>
+      <ResizablePanel
+          // @ts-expect-error - Figure out the correct types for
+        ref={leftPanelRef}
+        minSize={20}
+        collapsedSize={0}
+        defaultSize={20}
+        collapsible
+        className={"min-h-full"}
+      >
         <SidebarProvider>
           <AppSidebar />
         </SidebarProvider>
