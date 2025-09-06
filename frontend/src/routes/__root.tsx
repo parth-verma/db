@@ -2,7 +2,7 @@ import { useMediaQuery } from "@custom-react-hooks/use-media-query";
 import { clsx } from "clsx";
 import { PanelLeftIcon, PanelRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Index from "@/routes/index.tsx";
+import Index from "@/routes/Workbench";
 
 export default function Root() {
   const isDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
