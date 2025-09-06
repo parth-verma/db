@@ -26,6 +26,7 @@ type Props = {
   connection: DBConnection;
   onConnect: (connection: DBConnection) => void | Promise<void>;
   onDelete: (connection: DBConnection) => void | Promise<void>;
+  onEdit?: (connection: DBConnection) => void | Promise<void>;
 };
 
 function DeleteButton({
@@ -59,7 +60,7 @@ function DeleteButton({
   );
 }
 
-export function ConnectionCard({ connection, onConnect, onDelete }: Props) {
+export function ConnectionCard({ connection, onConnect, onDelete, onEdit }: Props) {
   const logoSrc = connection.type === "postgres" ? PostgresLogo : MySQLLogo;
   const logoAlt =
     connection.type === "postgres" ? "PostgreSQL logo" : "MySQL logo";
@@ -106,6 +107,9 @@ export function ConnectionCard({ connection, onConnect, onDelete }: Props) {
       <ContextMenuContent className={isDarkMode ? "dark" : ""}>
         <ContextMenuItem onClick={() => onConnect(connection)}>
           Connect
+        </ContextMenuItem>
+        <ContextMenuItem onClick={() => onEdit?.(connection)}>
+          Edit
         </ContextMenuItem>
         <ContextMenuItem onClick={() => setOpen(true)} variant={"destructive"}>
           Delete

@@ -27,6 +27,8 @@ function ConnectionsPage() {
   const isDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [selectedForEdit, setSelectedForEdit] = useState<DatabaseConnection | null>(null);
 
   // Load connections using React Query
   const {
@@ -108,6 +110,18 @@ function ConnectionsPage() {
             open={isDialogOpen}
             onOpenChange={setIsDialogOpen}
           />
+          <NewConnectionDialog
+            key={selectedForEdit?.id ?? "no-edit"}
+            mode="edit"
+            initial={selectedForEdit}
+            open={isEditOpen}
+            onOpenChange={(open) => {
+              if (!open) {
+                setSelectedForEdit(null);
+              }
+              setIsEditOpen(open);
+            }}
+          />
         </div>
       </div>
       <div className="px-8 mx-auto py-8 overflow-y-auto max-h-[calc(100vh-38px)]">
@@ -135,6 +149,10 @@ function ConnectionsPage() {
                 onDelete={(connection) =>
                   deleteConnectionMutation.mutate(connection)
                 }
+                onEdit={(connection) => {
+                  setSelectedForEdit(connection);
+                  setIsEditOpen(true);
+                }}
               />
             ))}
           </div>
