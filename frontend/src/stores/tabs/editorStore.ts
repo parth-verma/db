@@ -11,12 +11,15 @@ type EditorTabState = {
   // Query results for this tab
   columnInfo: columns[];
   rowData: string[][];
+  // Last execution time in milliseconds for the latest run
+  lastExecutionTimeMs: number | null;
   // Actions for this tab
 };
 
 type EditorTabActions = {
   setEditorValue: (value: string) => void;
   setResults: (columns: columns[], rows: string[][]) => void;
+  setExecutionTime: (ms: number | null) => void;
   reset: () => void;
 };
 
@@ -38,14 +41,17 @@ const createEditorTabStore = (
     editorValue: init?.editorValue ?? "-- Enter your SQL query here",
     columnInfo: init?.columnInfo ?? [],
     rowData: init?.rowData ?? [],
+    lastExecutionTimeMs: init?.lastExecutionTimeMs ?? null,
     setEditorValue: (value) => set({ editorValue: value }),
     setResults: (columns, rows) =>
       set({ columnInfo: columns ?? [], rowData: rows ?? [] }),
+    setExecutionTime: (ms) => set({ lastExecutionTimeMs: ms }),
     reset: () =>
       set({
         editorValue: "-- Enter your SQL query here",
         columnInfo: [],
         rowData: [],
+        lastExecutionTimeMs: null,
       }),
   }));
 };

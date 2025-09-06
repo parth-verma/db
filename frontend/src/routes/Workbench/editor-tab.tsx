@@ -1,7 +1,6 @@
 import {useEditorStores, useEditorTabStore} from "@/stores/tabs";
 import {TabsTrigger} from "@/components/ui/tabs.tsx";
 import {XIcon} from "lucide-react";
-import React from "react";
 
 export function EditorTab({tabId}: { tabId: string }) {
     const title = useEditorTabStore(tabId, (s) => s.title);

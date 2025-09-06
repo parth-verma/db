@@ -12,20 +12,27 @@ import {
   VirtualItem,
   Virtualizer,
 } from "@tanstack/react-virtual";
-import React, { MouseEvent, useLayoutEffect, useRef } from "react";
+import React, {forwardRef, MouseEvent, useImperativeHandle, useLayoutEffect, useRef} from "react";
 import { columns } from "../../bindings/changeme/internal";
 import { clsx } from "clsx";
 
 // Define a type for our dynamic row data
 type DynamicRow = Record<string, string>;
 
+export interface TableRef {
+  scrollToTop: () => void;
+}
+
 // Default empty data
 const defaultData: DynamicRow[] = [];
 
-export function Table({
+export const Table = forwardRef<TableRef, {
+  columnInfo?: columns[],
+  rowData?: string[][]
+}>(({
   columnInfo = [] as columns[],
   rowData = [] as string[][],
-}) {
+}, ref) => {
   const processedData = React.useMemo(() => {
     if (!columnInfo.length || !rowData.length) return defaultData;
 
@@ -72,10 +79,12 @@ export function Table({
     columnResizeMode: "onChange",
   });
 
-  return <TableCore table={table} />;
-}
+  return <TableCore table={table} ref={ref} />;
+});
 
-function TableCore({ table }: { table: DTable<RowData> }) {
+Table.displayName = "Table";
+
+const TableCore = forwardRef<TableRef, { table: DTable<RowData> }>(({ table }, ref) => {
   // Convert the 2D array of strings to an array of objects
   // where each object represents a row with column names as keys
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -107,6 +116,17 @@ function TableCore({ table }: { table: DTable<RowData> }) {
       );
     };
   };
+
+  useImperativeHandle(ref, () => {
+    return {
+      scrollToTop: () => {
+        tableContainerRef?.current?.scrollTo({
+          top: 0,
+          behavior: "instant"
+        })
+      }
+    }
+  }, [])
 
   const columnTemplate =
     table
@@ -169,7 +189,9 @@ function TableCore({ table }: { table: DTable<RowData> }) {
       </table>
     </div>
   );
-}
+});
+
+TableCore.displayName = "TableCore";
 
 interface TableBodyProps {
   table: DTable<RowData>;

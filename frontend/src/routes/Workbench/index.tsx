@@ -9,7 +9,6 @@ import {loader} from "@monaco-editor/react";
 import * as monaco from "monaco-editor";
 // @ts-expect-error - Not sure how to fix these errors
 import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
-import React from "react";
 import {useEditorStores} from "@/stores/tabs";
 import {EditorTab} from "@/routes/Workbench/editor-tab.tsx";
 import {ScrollbarCustom} from "@/components/scroll-bar";
