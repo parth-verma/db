@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file.
 
 - - -
+## 0.3.0 - 2025-09-12
+#### Features
+- **(mysql)** parity with postgres - (68cec6a) - Parth Verma
+- Ability to edit connections - (3054a74) - Parth Verma
+#### Miscellaneous Chores
+- Added error boundary for tabs and results section - (4a16a52) - Parth Verma
+- update tasks - (e6f8625) - Parth Verma
+- lazy load editor tabs - (bee510e) - Parth Verma
+
+- - -
+
 ## 0.2.0 - 2025-09-06
 #### Features
 - Left pane toggle from top bar - (67bcad4) - Parth Verma
