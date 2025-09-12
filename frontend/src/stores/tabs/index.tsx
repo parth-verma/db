@@ -5,11 +5,13 @@ import {
   useContext,
   useMemo,
   useState,
+  type PropsWithChildren,
 } from "react";
 import {
   createEditorStoreFactory,
-  EditorStore,
   EditorStoreAPI,
+  TabState,
+  EditorTabDiscriminatedInit,
 } from "./editorStore.ts";
 import { useCallbackStable } from "use-callback-stable";
 import { useStore } from "zustand/react";
@@ -22,7 +24,7 @@ const EditorStoresContext = createContext({
   setActive: (() => {}) as Dispatch<SetStateAction<string | null>>,
 });
 
-export const EditorStoresProvider = ({ children }) => {
+export const EditorStoresProvider = ({ children }: PropsWithChildren) => {
   const [stores] = useState(() => new Map<string, EditorStoreAPI>());
 
   const [order, setOrder] = useState<string[]>([]);
@@ -51,16 +53,17 @@ export const useEditorStores = () => {
     [stores],
   );
 
-  const openTab = useCallbackStable(
-    (
-      initData: Omit<Parameters<typeof getOrCreateCounterStoreByKey>[1], "id">,
-    ) => {
-      const id = crypto.randomUUID();
-      getOrCreateCounterStoreByKey(id, { ...initData, id });
-      setOrder((s) => [...s, id]);
-      setActive(id);
-    },
-  );
+  const openTab = <K extends EditorTabDiscriminatedInit['type']>(initData: Omit<Extract<EditorTabDiscriminatedInit, { type: K }>, 'id'>) => {
+    const id: string = crypto.randomUUID();
+    // Forward to factory while preserving discriminant by casting to the full discriminated init
+    getOrCreateCounterStoreByKey({
+      ...initData,
+      id,
+    } as EditorTabDiscriminatedInit);
+    setOrder((s) => [...s, id]);
+    setActive(id);
+  };
+
 
   const closeTab = useCallbackStable((id: string) => {
     setOrder((s) => s.filter((i) => i !== id));
@@ -84,9 +87,10 @@ export const useEditorStores = () => {
   };
 };
 
-export function useEditorTabStore<U>(
+function useTabStore<U>(
   id: string,
-  selector: (state: EditorStore) => U,
+  type: TabState['type'],
+  selector: (state: TabState) => U,
 ) {
   const { stores } = useContext(EditorStoresContext);
   const store = stores.get(id);
@@ -97,9 +101,35 @@ export function useEditorTabStore<U>(
     );
   }
 
-  const getOrCreateCounterStoreByKey = useCallbackStable((id: string) =>
-    createEditorStoreFactory(stores)(id),
-  );
+  // Do not attempt to create or mutate the store type here; simply use the existing store.
+  return useStore(store, selector);
+}
 
-  return useStore(getOrCreateCounterStoreByKey(id), selector);
+export function useEditorTabStore<U>(
+  id: string,
+  selector: (state: Extract<TabState, { type: 'editor' }>) => U,
+) {
+  return useTabStore(id, "editor", selector as unknown as (state: TabState) => U);
+}
+
+export function useExplainTabStore<U>(
+  id: string,
+  selector: (state: Extract<TabState, { type: 'explain' }>) => U,
+) {
+  return useTabStore(id, "explain", selector as unknown as (state: TabState) => U);
+}
+
+// Read from any tab state (union) without narrowing by type
+export function useAnyTabStore<U>(
+  id: string,
+  selector: (state: TabState) => U,
+) {
+  const { stores } = useContext(EditorStoresContext);
+  const store = stores.get(id);
+  if (!store) {
+    throw new Error(
+      "useAnyTabStore must be used within EditorStoresProvider",
+    );
+  }
+  return useStore(store, selector);
 }

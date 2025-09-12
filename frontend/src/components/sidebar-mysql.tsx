@@ -1,18 +1,9 @@
 import * as React from "react";
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import {
-  ChevronRight,
-  Database,
-  Table as TableIcon,
-  Loader2,
-} from "lucide-react";
+import {useState} from "react";
+import {useQuery} from "@tanstack/react-query";
+import {ChevronRight, Database, Loader2,} from "lucide-react";
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import {Collapsible, CollapsibleContent, CollapsibleTrigger,} from "@/components/ui/collapsible";
 import {
   Sidebar,
   SidebarContent,
@@ -25,82 +16,12 @@ import {
   SidebarMenuSub,
 } from "@/components/ui/sidebar";
 
-import { DBConnectionService } from "@main";
+import {DBConnectionService} from "@main";
+import {MySQLTables} from "@/components/mysql/MySQLTables.tsx";
 
 interface MySQLSidebarProps extends React.ComponentProps<typeof Sidebar> {
   connectionId: string;
   connectionName: string;
-}
-
-function MySQLTables({
-  connectionId,
-  dbName,
-}: {
-  connectionId: string;
-  dbName: string;
-}) {
-  const {
-    data: tables = [],
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
-    queryKey: ["tables", connectionId, dbName],
-    queryFn: async () => {
-      const esc = (s: string) => s.replace(/`/g, "``").replace(/'/g, "''");
-      const sql = `SELECT table_name FROM information_schema.tables WHERE table_schema = '${esc(dbName)}' ORDER BY table_name`;
-      const [_, rows] = await DBConnectionService.RunQuery(connectionId, sql);
-      return (rows || []).map((r: string[]) => ({ name: String(r[0]) }));
-    },
-    enabled: !!connectionId && !!dbName,
-    staleTime: 30_000,
-  });
-
-  if (isLoading) {
-    return (
-      <SidebarMenuItem>
-        <SidebarMenuButton className="ml-8">
-          Loading tables...
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-    );
-  }
-  if (isError) {
-    return (
-      <SidebarMenuItem>
-        <SidebarMenuButton className="ml-8">
-          Error: {error instanceof Error ? error.message : String(error)}
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-    );
-  }
-  if (tables.length === 0) {
-    return (
-      <SidebarMenuItem>
-        <SidebarMenuButton className="ml-8">No tables</SidebarMenuButton>
-      </SidebarMenuItem>
-    );
-  }
-  return (
-    <>
-      {tables.map((table, idx) => (
-        <SidebarMenuButton
-          key={`${dbName}.${idx}`}
-          className="ml-8"
-          onClick={() => {
-            if (window.sqlEditor) {
-              window.sqlEditor.setValue(
-                `SELECT * FROM \`${dbName}\`.\`${table.name}\` LIMIT 100;`,
-              );
-            }
-          }}
-        >
-          <TableIcon />
-          {table.name}
-        </SidebarMenuButton>
-      ))}
-    </>
-  );
 }
 
 export function MySQLSidebar({
@@ -118,7 +39,7 @@ export function MySQLSidebar({
   } = useQuery<string[]>({
     queryKey: ["databases", connectionId],
     queryFn: async () => {
-      const sql = `SELECT schema_name FROM information_schema.schemata ORDER BY schema_name`;
+      const sql = `SELECT schema_name FROM information_schema.schemata where schema_name != 'mysql' ORDER BY schema_name`;
       const [_, rows] = await DBConnectionService.RunQuery(connectionId, sql);
       return (rows || []).map((r: string[]) => String(r[0]));
     },
@@ -179,7 +100,7 @@ export function MySQLSidebar({
                               }}
                             >
                               <CollapsibleTrigger asChild>
-                                <SidebarMenuButton className="ml-4">
+                                <SidebarMenuButton>
                                   <ChevronRight className="transition-transform" />
                                   {dbName}
                                 </SidebarMenuButton>
@@ -209,3 +130,4 @@ export function MySQLSidebar({
     </Sidebar>
   );
 }
+

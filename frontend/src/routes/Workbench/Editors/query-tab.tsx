@@ -7,12 +7,13 @@ import {Button} from "@/components/ui/button.tsx";
 import {PlayIcon} from "lucide-react";
 import {Table, TableRef} from "@/components/table.tsx";
 import {useMutation} from "@tanstack/react-query";
-import type {columns} from "../../../../bindings/changeme/internal.ts";
 import * as monaco from "monaco-editor";
+import { QueryResult } from "@/lib/query-result";
 // @ts-expect-error - Not sure how to fix these errors
 import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
 import {loader} from "@monaco-editor/react";
 import ErrorBoundary from "@/components/ErrorBoundary";
+// import {useEditorStores} from "@/stores/tabs";
 
 self.MonacoEnvironment = {
     getWorker() {
@@ -24,33 +25,26 @@ loader.config({ monaco });
 
 loader.init();
 
-// Declare global editor reference
-declare global {
-    interface Window {
-        sqlEditor: monaco.editor.IStandaloneCodeEditor | undefined;
-    }
-}
-
 export function QueryTab({tabId}) {
     // Tabs store integration
     const activeEditorValue = useEditorTabStore(tabId, (s) => s.editorValue);
     const setEditorValue = useEditorTabStore(tabId, (s) => s.setEditorValue);
-    const setResults = useEditorTabStore(tabId, (s) => s.setResults);
+    const setQueryResult = useEditorTabStore(tabId, (s) => s.setQueryResult);
     const setExecutionTime = useEditorTabStore(tabId, (s) => s.setExecutionTime);
-    const columnInfo = useEditorTabStore(tabId, (s) => s.columnInfo);
-    const rowData = useEditorTabStore(tabId, (s) => s.rowData);
+    const queryResult = useEditorTabStore(tabId, (s) => s.queryResult);
     const lastExecutionTimeMs = useEditorTabStore(tabId, (s) => s.lastExecutionTimeMs);
     const tableRef = useRef<TableRef>(null);
 
     const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
+    // const { openTab } = useEditorStores();
 
     const runQueryMutation = useMutation({
         mutationFn: async ({connectionId, query}: { connectionId: string; query: string }) => {
             const [cols, data] = await DBConnectionService.RunQuery(connectionId, query);
-            return {cols: (cols || []) as columns[], data: (data || []) as string[][]};
+            return new QueryResult(cols || [], data || []);
         },
-        onSuccess: (result) => {
-            setResults(result.cols, result.data);
+        onSuccess: (result: QueryResult) => {
+            setQueryResult(result);
             tableRef.current?.scrollToTop();
         },
         onError: (err: unknown) => {
@@ -122,13 +116,16 @@ export function QueryTab({tabId}) {
                         defaultLanguage="sql"
                     />
                     <div className="absolute top-2 right-2 flex gap-2">
-                        <Button
-                            onClick={() => (window.location.href = "/connections.html")}
-                            size="sm"
-                            variant="outline"
-                        >
-                            Switch Connection
-                        </Button>
+                        {/*<Button*/}
+                        {/*    onClick={() => {*/}
+                        {/*        const q = editorRef.current?.getValue() ?? "";*/}
+                        {/*        openTab<'explain'>({ type: "explain", explainQuery: q });*/}
+                        {/*    }}*/}
+                        {/*    size="sm"*/}
+                        {/*    variant="outline"*/}
+                        {/*>*/}
+                        {/*    Explain*/}
+                        {/*</Button>*/}
                         <Button
                             onClick={handleRunQuery}
                             disabled={runQueryMutation.isPending}
@@ -151,7 +148,7 @@ export function QueryTab({tabId}) {
                 <div className={"h-full flex flex-col max-h-full overflow-hidden"}>
                     <div className="relative grow shrink overflow-hidden">
                         <ErrorBoundary
-                            resetKeys={[columnInfo, rowData]}
+                            resetKeys={[queryResult]}
                             fallback={(error, reset) => (
                                 <div className="w-full h-full flex items-center justify-center p-4">
                                     <div className="max-w-xl w-full border border-destructive/40 bg-destructive/10 text-destructive rounded p-4 shadow-sm">
@@ -162,7 +159,7 @@ export function QueryTab({tabId}) {
                                                 className="px-3 py-1.5 text-sm rounded bg-foreground text-background hover:opacity-90"
                                                 onClick={() => {
                                                     // Clear results and mutation error state, then reset boundary
-                                                    setResults([], []);
+                                                    setQueryResult(null);
                                                     runQueryMutation.reset();
                                                     reset();
                                                 }}
@@ -174,7 +171,7 @@ export function QueryTab({tabId}) {
                                 </div>
                             )}
                         >
-                            <Table columnInfo={columnInfo} rowData={rowData} ref={tableRef}/>
+                            <Table queryResult={queryResult} ref={tableRef}/>
                         </ErrorBoundary>
                         {(runQueryMutation.isPending || runQueryMutation.isError) && (
                             <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-20">
@@ -203,7 +200,7 @@ export function QueryTab({tabId}) {
                     <div
                         className="h-5 w-full bg-background/40 border-t border-border text-xs text-muted-foreground flex items-center px-2 justify-between">
                         <div>
-                            {typeof rowData?.length === 'number' ? `${rowData.length} row${rowData.length === 1 ? '' : 's'}` : ''}
+                            {typeof queryResult?.rowCount === 'function' ? `${queryResult.rowCount()} row${queryResult.rowCount() === 1 ? '' : 's'}` : ''}
                         </div>
                         <div>
                             {lastExecutionTimeMs != null ? `${lastExecutionTimeMs} ms` : ''}

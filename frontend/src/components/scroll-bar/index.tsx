@@ -2,7 +2,7 @@ import React from "react";
 import {Scrollbar} from "react-scrollbars-custom";
 import {clsx} from "clsx";
 
-export function ScrollbarCustom(props: React.PropsWithChildren<unknown>) {
+export function ScrollbarCustom(props: React.PropsWithChildren) {
     const [isScrollabrShown, setIsScrollbarShown] = React.useState(false);
     const timeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
 

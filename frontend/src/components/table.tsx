@@ -13,63 +13,43 @@ import {
   Virtualizer,
 } from "@tanstack/react-virtual";
 import React, {forwardRef, MouseEvent, useImperativeHandle, useLayoutEffect, useRef} from "react";
-import { columns } from "../../bindings/changeme/internal";
+import type {IQueryResult, IRow} from "@/lib/query-result";
 import { clsx } from "clsx";
 
 // Define a type for our dynamic row data
-type DynamicRow = Record<string, string>;
 
 export interface TableRef {
   scrollToTop: () => void;
 }
 
-// Default empty data
-const defaultData: DynamicRow[] = [];
-
 export const Table = forwardRef<TableRef, {
-  columnInfo?: columns[],
-  rowData?: string[][]
-}>(({
-  columnInfo = [] as columns[],
-  rowData = [] as string[][],
-}, ref) => {
+  queryResult?: IQueryResult | null,
+}>(({ queryResult = null }, ref) => {
   const processedData = React.useMemo(() => {
-    if (!columnInfo.length || !rowData.length) return defaultData;
+    return queryResult?.getRows() ?? [];
+  }, [queryResult]);
 
-    return rowData.map((row) => {
-      const rowObj: DynamicRow = {};
-      columnInfo.forEach((col, index) => {
-        // Use column name as the key and row value as the value
-        rowObj[col.Name] = row[index];
-      });
-      return rowObj;
-    });
-  }, [columnInfo, rowData]);
-
-  // Dynamically create columns based on the column info
+  // Dynamically create columns based on the queryResult
   const columns = React.useMemo(() => {
-    if (!columnInfo.length) return [];
+    if (!queryResult || queryResult.colCount() === 0) return [];
+    const cols = queryResult.columns;
 
-    return columnInfo.map(
-      (col): ColumnDef<unknown> => ({
-        accessorKey: col.Name,
+    return cols.map(
+      (col, idx): ColumnDef<IRow> => ({
+        id: idx.toString(),
         header: () => (
           <div className="flex flex-col">
-            <span>{col.Name}</span>
+            <span>{col.name}</span>
             <span className="text-[11px] leading-tight text-muted-foreground">
-              {col.Type}
+              {col.type}
             </span>
           </div>
         ),
-        minSize: col.Name.length * 7 + 24,
-        cell: (info) => info.getValue(),
-        footer: (info) => info.column.id,
-        meta: {
-          type: col.Type,
-        },
+        minSize: Math.max(col.name.length, col.type.length) * 7 + 24,
+        cell: ({row, column}) => row.original.get(parseInt(column.id)),
       }),
     );
-  }, [columnInfo]);
+  }, [queryResult?.columns]);
 
   const table = useReactTable({
     data: processedData,
@@ -84,7 +64,7 @@ export const Table = forwardRef<TableRef, {
 
 Table.displayName = "Table";
 
-const TableCore = forwardRef<TableRef, { table: DTable<RowData> }>(({ table }, ref) => {
+const TableCore = forwardRef<TableRef, { table: DTable<IRow> }>(({ table }, ref) => {
   // Convert the 2D array of strings to an array of objects
   // where each object represents a row with column names as keys
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -194,7 +174,7 @@ const TableCore = forwardRef<TableRef, { table: DTable<RowData> }>(({ table }, r
 TableCore.displayName = "TableCore";
 
 interface TableBodyProps {
-  table: DTable<RowData>;
+  table: DTable<IRow>;
   tableContainerRef: React.RefObject<HTMLDivElement>;
 }
 
