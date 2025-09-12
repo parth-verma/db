@@ -113,7 +113,8 @@ export function PGTables({ connectionId, parentId }: NodeProps) {
                         const fqtn = `${quoteIdent(schema)}.${quoteIdent(table.name)}`;
                         const sql = `SELECT * FROM ${fqtn};`;
 
-                        openTab({
+                        openTab<'editor'>({
+                          type: "editor",
                           editorValue: sql,
                         });
                       }}
@@ -126,7 +127,8 @@ export function PGTables({ connectionId, parentId }: NodeProps) {
                           `"${s.replace(/"/g, '""')}"`;
                         const fqtn = `${quoteIdent(schema)}.${quoteIdent(table.name)}`;
                         const sql = `SELECT * FROM ${fqtn} LIMIT 1000;`;
-                        openTab({
+                        openTab<'editor'>({
+                          type: "editor",
                           editorValue: sql,
                         });
                       }}

@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"log"
+	"runtime"
 )
 
 // Wails uses Go's `embed` package to embed the frontend files into the binary.
@@ -50,6 +51,62 @@ func main() {
 	// 'BackgroundColour' is the background colour of the window.
 	// 'URL' is the URL that will be loaded into the webview.
 
+	// Run the application. This blocks until the application has been exited.
+
+	menu := app.NewMenu()
+
+	// Add standard application menu on macOS
+	if runtime.GOOS == "darwin" {
+		menu.AddRole(application.AppMenu)
+	}
+	fileMenu := menu.AddSubmenu("File")
+	menu.AddRole(application.EditMenu)
+	menu.AddRole(application.WindowMenu)
+	menu.AddRole(application.HelpMenu)
+
+	fileMenu.Add("New Window").OnClick(func(ctx *application.Context) {
+		currentWindow := app.Window.Current()
+		if currentWindow != nil && currentWindow.IsFullscreen() {
+			app.Window.NewWithOptions(application.WebviewWindowOptions{
+				Title: "Database Connections",
+				Mac: application.MacWindow{
+					InvisibleTitleBarHeight: 50,
+					Backdrop:                application.MacBackdropTranslucent,
+					TitleBar:                application.MacTitleBarHiddenInset,
+				},
+				StartState:       application.WindowStateFullscreen,
+				Height:           currentWindow.Height(),
+				Width:            currentWindow.Width(),
+				MinWidth:         600,
+				MinHeight:        250,
+				BackgroundColour: application.NewRGB(27, 38, 54),
+				URL:              "/connections.html",
+			})
+			return
+		}
+
+		app.Window.NewWithOptions(application.WebviewWindowOptions{
+			Title: "Database Connections",
+			Mac: application.MacWindow{
+				InvisibleTitleBarHeight: 50,
+				Backdrop:                application.MacBackdropTranslucent,
+				TitleBar:                application.MacTitleBarHiddenInset,
+			},
+			MinWidth:         600,
+			MinHeight:        250,
+			BackgroundColour: application.NewRGB(27, 38, 54),
+			URL:              "/connections.html",
+		})
+	})
+	fileMenu.AddSeparator()
+	if runtime.GOOS == "darwin" {
+		fileMenu.AddRole(application.CloseWindow)
+	} else {
+		fileMenu.AddRole(application.Quit)
+	}
+
+	app.Menu.Set(menu)
+
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Database Connections",
 		Mac: application.MacWindow{
@@ -63,11 +120,10 @@ func main() {
 		URL:              "/connections.html",
 	})
 
-	// Run the application. This blocks until the application has been exited.
 	err := app.Run()
-
-	// If an error occurred while running the application, log it and exit.
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// If an error occurred while running the application, log it and exit.
 }

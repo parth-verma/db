@@ -14,7 +14,16 @@ import {Spinner} from "@/components/ui/shadcn-io/spinner";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 const QueryTab = lazy(() => import("@/routes/Workbench/Editors/query-tab.tsx").then(m => ({default: m.QueryTab})));
+const ExplainTab = lazy(() => import("@/routes/Workbench/Editors/explain-tab.tsx").then(m => ({default: m.ExplainTab})));
+import {useAnyTabStore} from "@/stores/tabs";
 
+function WorkbenchTabContent({ id }: { id: string }) {
+    const type = useAnyTabStore(id, s => s.type);
+    if (type === "explain") {
+        return <ExplainTab tabId={id}/>;
+    }
+    return <QueryTab tabId={id}/>;
+}
 
 export default function Index() {
     // Tabs header state
@@ -58,7 +67,7 @@ export default function Index() {
                             size="sm"
                             className="shrink-0"
                             onClick={() => {
-                                openTab({});
+                                openTab({ type: "editor" });
                             }}
                             aria-label="New tab"
                         >
@@ -71,7 +80,7 @@ export default function Index() {
                                 <Suspense fallback={<div className={"w-full h-full flex items-center justify-center"}>
                                     <Spinner variant={'infinite'} size={40}/>
                                 </div>}>
-                                    <QueryTab key={id} tabId={id}/>
+                                    <WorkbenchTabContent key={id} id={id}/>
                                 </Suspense>
                             </ErrorBoundary>
                         </TabsContent>
