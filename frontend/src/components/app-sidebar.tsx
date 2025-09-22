@@ -11,7 +11,8 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
 } from "@/components/ui/sidebar";
-import { DBConnectionService, type DBConnection } from "@main";
+import { DBConnectionService } from "@/main";
+import type {DBConnection} from "@/main/utils";
 import { PostgresSidebar } from "./sidebar-postgres";
 import { MySQLSidebar } from "./sidebar-mysql";
 

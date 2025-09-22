@@ -11,7 +11,7 @@ import {
   SidebarMenuItem,
   SidebarMenuSub,
 } from "@/components/ui/sidebar";
-import { DBConnectionService } from "@main";
+import { DBConnectionService } from "@/main";
 import { type NodeProps } from "./PGTopItem";
 import { PGSchemas } from "./PGSchemas";
 import {

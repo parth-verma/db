@@ -16,7 +16,7 @@ import {
   SidebarMenuSub,
 } from "@/components/ui/sidebar";
 
-import {DBConnectionService} from "@main";
+import {DBConnectionService} from "@/main";
 import {MySQLTables} from "@/components/mysql/MySQLTables.tsx";
 
 interface MySQLSidebarProps extends React.ComponentProps<typeof Sidebar> {

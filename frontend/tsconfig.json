@@ -22,7 +22,8 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@main": ["./bindings/changeme"],
+      "@/main": ["./bindings/changeme"],
+      "@/main/*": ["./bindings/changeme/*"],
       "@/images": ["./assets/images"],
       "@/*": ["./src/*"]
     },

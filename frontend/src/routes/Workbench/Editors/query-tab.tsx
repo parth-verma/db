@@ -1,6 +1,6 @@
 import {useEditorTabStore} from "@/stores/tabs";
 import {useRef} from "react";
-import {DBConnectionService} from "@main";
+import {DBConnectionService} from "@/main";
 import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable.tsx";
 import {Editor} from "@monaco-editor/react";
 import {Button} from "@/components/ui/button.tsx";

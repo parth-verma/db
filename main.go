@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"log"
+	"log/slog"
 	"runtime"
 )
 
@@ -27,23 +28,24 @@ func main() {
 	// 'Bind' is a list of Go struct instances. The frontend has access to the methods of these instances.
 	// 'Mac' options tailor the application when running an macOS.
 	// Initialize the database connection service
-	dbConnectionService := NewDBConnectionService()
 
 	app := application.New(application.Options{
 		Name:        "db",
 		Description: "A demo of using raw HTML & CSS",
-		Services: []application.Service{
-			application.NewService(&GreetService{}),
-			application.NewService(&PGService{}),
-			application.NewService(dbConnectionService),
-		},
+		Logger:      nil,             // nil → default stdout logger
+		LogLevel:    slog.LevelDebug, // in dev
+		Services:    []application.Service{},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
 		},
 		Mac: application.MacOptions{
-			ApplicationShouldTerminateAfterLastWindowClosed: true,
+			ApplicationShouldTerminateAfterLastWindowClosed: false,
 		},
 	})
+
+	dbConnectionService := NewDBConnectionService(app.Logger)
+
+	app.RegisterService(application.NewService(dbConnectionService))
 
 	// Create a new window with the necessary options.
 	// 'Title' is the title of the window.
