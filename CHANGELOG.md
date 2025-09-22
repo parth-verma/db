@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file.
 
 - - -
+## 0.4.0 - 2025-09-22
+#### Features
+- **(pg)** Add shim to emulate ssl mode prefer - (521ea5b) - Parth Verma
+#### Miscellaneous Chores
+- Add bindings folder to .gitignore - (8170dd0) - Parth Verma
+
+- - -
+
 ## 0.3.0 - 2025-09-12
 #### Features
 - **(mysql)** parity with postgres - (68cec6a) - Parth Verma
