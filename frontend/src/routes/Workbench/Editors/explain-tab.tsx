@@ -1,11 +1,13 @@
 import {useExplainTabStore} from "@/stores/tabs";
 import {useMemo, useRef} from "react";
-import {DBConnectionService, type DBConnection} from "@main";
+import {DBConnectionService} from "@/main";
+
 import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable.tsx";
 import {Editor, loader} from "@monaco-editor/react";
 import {Button} from "@/components/ui/button.tsx";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import * as monaco from "monaco-editor";
+import {DBConnection} from "@/main/utils";
 
 // Initialize monaco similarly as QueryTab
 loader.config({ monaco });

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { columns as ColDef } from "@/../bindings/changeme/internal";
+import type { Columns as ColDef } from "@/main/utils";
 
 export interface IColumn {
   readonly name: string;

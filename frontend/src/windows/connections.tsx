@@ -14,10 +14,11 @@ import {
   useMutation,
 } from "@tanstack/react-query";
 
-import { DBConnectionService, type DBConnection } from "@main";
+import { DBConnectionService } from "@/main";
 import { ConnectionCard } from "@/components/ConnectionCard";
 import NewConnectionDialog from "@/components/NewConnectionDialog";
 import { PlusIcon } from "lucide-react";
+import {DBConnection} from "@/main/utils";
 
 type DatabaseConnection = DBConnection;
 

@@ -12,7 +12,6 @@ import {
 import PostgresLogo from "@/images/PostgresLogo.png";
 import MySQLLogo from "@/images/MySQLLogo.png";
 
-import type { DBConnection } from "@main";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -21,6 +20,7 @@ import {
 } from "@/components/ui/context-menu.tsx";
 import { useMediaQuery } from "@custom-react-hooks/use-media-query";
 import { useState } from "react";
+import { DBConnection } from "@/main/utils";
 
 type Props = {
   connection: DBConnection;
@@ -83,7 +83,7 @@ export function ConnectionCard({ connection, onConnect, onDelete, onEdit }: Prop
               </CardHeader>
               <CardContent className={"max-w-full overflow-hidden"}>
                 <span
-                  className="text-sm text-muted-foreground text-ellipsis block overflow-hidden max-w-full"
+                  className="text-sm text-muted-foreground text-ellipsis block overflow-hidden max-w-full whitespace-nowrap"
                   title={`${connection.host}:${connection.port}`}
                 >
                   {connection.host}:{connection.port}

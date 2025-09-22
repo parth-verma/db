@@ -1,35 +1,27 @@
 package main
 
 import (
+	"changeme/databaseServices"
+	"changeme/utils"
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 	"io/ioutil"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strconv"
 	"time"
-
-	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/lib/pq"
 )
-
-// DBConnection represents a database connection configuration
-type DBConnection struct {
-	ID       string `json:"id"`
-	Name     string `json:"name"`
-	Type     string `json:"type"` // "postgres" or "mysql"
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Database string `json:"database"`
-}
 
 // DBConnectionService handles database connection operations
 type DBConnectionService struct {
 	connectionsFile string
-	connections     []DBConnection
+	connections     []utils.DBConnection
+	logger          *slog.Logger
+	PGService       *databaseServices.PGService
 }
 
 // TableInfo represents a database table
@@ -38,7 +30,7 @@ type TableInfo struct {
 }
 
 // NewDBConnectionService creates a new DBConnectionService
-func NewDBConnectionService() *DBConnectionService {
+func NewDBConnectionService(logger *slog.Logger) *DBConnectionService {
 	// Get the user's home directory
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -57,6 +49,8 @@ func NewDBConnectionService() *DBConnectionService {
 	// Create a new service
 	service := &DBConnectionService{
 		connectionsFile: connectionsFile,
+		logger:          logger,
+		PGService:       databaseServices.CreatePGService(logger),
 	}
 
 	// Load existing connections
@@ -70,7 +64,7 @@ func (s *DBConnectionService) loadConnections() {
 	// Check if the file exists
 	if _, err := os.Stat(s.connectionsFile); os.IsNotExist(err) {
 		// Create an empty file
-		s.connections = []DBConnection{}
+		s.connections = []utils.DBConnection{}
 		s.saveConnections()
 		return
 	}
@@ -78,14 +72,14 @@ func (s *DBConnectionService) loadConnections() {
 	// Read the file
 	data, err := ioutil.ReadFile(s.connectionsFile)
 	if err != nil {
-		s.connections = []DBConnection{}
+		s.connections = []utils.DBConnection{}
 		return
 	}
 
 	// Parse the JSON
 	err = json.Unmarshal(data, &s.connections)
 	if err != nil {
-		s.connections = []DBConnection{}
+		s.connections = []utils.DBConnection{}
 	}
 }
 
@@ -102,12 +96,12 @@ func (s *DBConnectionService) saveConnections() error {
 }
 
 // GetConnections returns all saved connections
-func (s *DBConnectionService) GetConnections() []DBConnection {
+func (s *DBConnectionService) GetConnections() []utils.DBConnection {
 	return s.connections
 }
 
 // SaveConnection adds or updates a connection
-func (s *DBConnectionService) SaveConnection(connection DBConnection) error {
+func (s *DBConnectionService) SaveConnection(connection utils.DBConnection) error {
 	// Check if the connection already exists
 	for i, conn := range s.connections {
 		if conn.ID == connection.ID {
@@ -139,15 +133,14 @@ func (s *DBConnectionService) DeleteConnection(id string) error {
 }
 
 // TestConnection tests if a connection works
-func (s *DBConnectionService) TestConnection(connection DBConnection) error {
+func (s *DBConnectionService) TestConnection(connection utils.DBConnection) error {
 	var db *sql.DB
 	var err error
 
 	switch connection.Type {
 	case "postgres":
-		connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-			connection.Host, connection.Port, connection.Username, connection.Password, connection.Database)
-		db, err = sql.Open("postgres", connStr)
+		err, db = s.PGService.GetConnection(connection)
+
 	case "mysql":
 		connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",
 			connection.Username, connection.Password, connection.Host, connection.Port, connection.Database)
@@ -263,9 +256,9 @@ func convertToString(val interface{}) string {
 }
 
 // RunQuery executes a query on the specified connection
-func (s *DBConnectionService) RunQuery(connectionID string, query string) (error, []columns, [][]string) {
+func (s *DBConnectionService) RunQuery(connectionID string, query string) (error, []utils.Columns, [][]string) {
 	// Find the connection
-	var connection DBConnection
+	var connection utils.DBConnection
 	found := false
 	for _, conn := range s.connections {
 		if conn.ID == connectionID {
@@ -285,9 +278,7 @@ func (s *DBConnectionService) RunQuery(connectionID string, query string) (error
 
 	switch connection.Type {
 	case "postgres":
-		connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-			connection.Host, connection.Port, connection.Username, connection.Password, connection.Database)
-		db, err = sql.Open("postgres", connStr)
+		err, db = s.PGService.GetConnection(connection)
 	case "mysql":
 		connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",
 			connection.Username, connection.Password, connection.Host, connection.Port, connection.Database)
@@ -308,7 +299,7 @@ func (s *DBConnectionService) RunQuery(connectionID string, query string) (error
 	}
 	defer rows.Close()
 
-	var types []columns
+	var types []utils.Columns
 	var data [][]string
 
 	for {
@@ -323,9 +314,9 @@ func (s *DBConnectionService) RunQuery(connectionID string, query string) (error
 		}
 
 		// Prepare columns metadata for this result set
-		types = make([]columns, len(cols))
+		types = make([]utils.Columns, len(cols))
 		for i, col := range cols {
-			types[i] = columns{
+			types[i] = utils.Columns{
 				Name: col,
 				Type: colTypes[i].DatabaseTypeName(),
 			}

@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
-import { DBConnectionService } from "@main";
+import { DBConnectionService } from "@/main";
 import { type NodeProps } from "./PGTopItem";
 import { Key, ExternalLink } from "lucide-react";
 import { clsx } from "clsx";

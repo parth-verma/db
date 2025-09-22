@@ -1,6 +1,6 @@
 import {useEditorStores} from "@/stores/tabs";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {DBConnectionService} from "@main";
+import {DBConnectionService} from "@/main";
 import {useState} from "react";
 import {SidebarMenuButton, SidebarMenuItem, SidebarMenuSub} from "@/components/ui/sidebar.tsx";
 import {Collapsible, CollapsibleContent, CollapsibleTrigger} from "@/components/ui/collapsible.tsx";

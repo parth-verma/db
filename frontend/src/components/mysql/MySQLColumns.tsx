@@ -1,5 +1,5 @@
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {DBConnectionService} from "@main";
+import {DBConnectionService} from "@/main";
 import {SidebarMenuButton, SidebarMenuItem} from "@/components/ui/sidebar.tsx";
 import {ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger} from "@/components/ui/context-menu.tsx";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
