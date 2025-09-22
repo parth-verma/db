@@ -28,6 +28,7 @@ import type {
 import {createFormHook, createFormHookContexts} from "@tanstack/react-form";
 import {z} from "zod";
 import {PasswordInput} from "@/components/ui/password-input.tsx";
+import {parseConnectionString} from "@/lib/connection-string-parser.ts";
 
 export type NewConnectionDialogProps = {
     open: boolean;
@@ -51,7 +52,7 @@ const {useAppForm} = createFormHook({
 });
 
 const mysqlSchema = z.object({
-    name: z.string(),
+    name: z.string().min(1),
     type: z.literal("mysql"),
     host: z.string(),
     port: z.number().optional().default(3306),
@@ -61,7 +62,7 @@ const mysqlSchema = z.object({
 });
 
 const postgresSchema = z.object({
-    name: z.string(),
+    name: z.string().min(1),
     type: z.literal("postgres"),
     host: z.string(),
     port: z.number().optional().default(5432),
@@ -152,6 +153,15 @@ export function NewConnectionDialog({
             await saveConnectionMutation.mutateAsync(conn);
         },
     });
+
+    const applyParsedToForm = (parsed: NonNullable<ReturnType<typeof parseConnectionString>>) => {
+        form.setFieldValue('type', parsed.type);
+        form.setFieldValue('host', parsed.host);
+        form.setFieldValue("port", parsed.port ?? (parsed.type === 'postgres' ? 5432 : 3306));
+        form.setFieldValue("username", parsed.username ?? '');
+        form.setFieldValue("password", parsed.password ?? '');
+        form.setFieldValue("database", parsed.database ?? '');
+    };
 
     return (
         <Dialog
@@ -256,9 +266,18 @@ export function NewConnectionDialog({
                                         name={field.name}
                                         className="w-full"
                                         value={(field.state.value as string) ?? ""}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                        onPaste={(e: React.ClipboardEvent<HTMLInputElement>) => {
+                                            const pasted = e.clipboardData.getData('text');
+                                            const parsed = parseConnectionString(pasted);
+                                            if (!parsed){
+                                                return
+                                            }
+                                            e.preventDefault();
+                                            applyParsedToForm(parsed);
+                                        }}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                             field.handleChange(e.target.value)
-                                        }
+                                        }}
                                         onBlur={field.handleBlur}
                                     />
                                     {(field.state.meta.isTouched || form.state.isSubmitted) &&
