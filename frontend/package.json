@@ -9,7 +9,8 @@
     "build": "tsc && vite build --mode production",
     "lint": "prettier src --check --write",
     "preview": "vite preview",
-    "prepare": "cd .. && husky frontend/.husky"
+    "prepare": "cd .. && husky frontend/.husky",
+    "commitlint": "commitlint --edit"
   },
   "dependencies": {
     "@custom-react-hooks/use-media-query": "^1.5.1",
@@ -45,6 +46,8 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
     "@eslint/js": "^9.34.0",
     "@tailwindcss/postcss": "latest",
     "@types/node": "^24.0.3",
