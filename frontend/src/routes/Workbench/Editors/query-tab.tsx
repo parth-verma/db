@@ -1,4 +1,4 @@
-import { useTabState } from "@/stores/tabs";
+import { useTabActions, useTabState } from "@/stores/tabs";
 import { useRef } from "react";
 import { DBConnectionService } from "@/main";
 import {
@@ -41,6 +41,7 @@ export function QueryTab({ tabId }) {
     setLastExecutionTimeMs,
   } = editorTab;
   const tableRef = useRef<TableRef>(null);
+  const { openTab } = useTabActions();
 
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
   // const { openTab } = useTabActions();
@@ -132,16 +133,16 @@ export function QueryTab({ tabId }) {
             defaultLanguage="sql"
           />
           <div className="absolute top-2 right-2 flex gap-2">
-            {/*<Button*/}
-            {/*    onClick={() => {*/}
-            {/*        const q = editorRef.current?.getValue() ?? "";*/}
-            {/*        openTab<'explain'>({ type: "explain", explainQuery: q });*/}
-            {/*    }}*/}
-            {/*    size="sm"*/}
-            {/*    variant="outline"*/}
-            {/*>*/}
-            {/*    Explain*/}
-            {/*</Button>*/}
+            <Button
+              onClick={() => {
+                const query = editorRef.current?.getValue() ?? "";
+                openTab({ type: "explain", explainQuery: query });
+              }}
+              size="sm"
+              variant="outline"
+            >
+              Explain
+            </Button>
             <Button
               onClick={handleRunQuery}
               disabled={runQueryMutation.isPending}

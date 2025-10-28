@@ -1,0 +1,101 @@
+export enum HighlightType {
+  NONE = "none",
+  DURATION = "duration",
+  ROWS = "rows",
+  COST = "cost",
+}
+
+export enum EstimateDirection {
+  over = 1,
+  under = 2,
+  none = 3,
+}
+
+export enum NodeProp {
+  // plan property keys
+  NODE_TYPE = "Node Type",
+  ACTUAL_ROWS = "Actual Rows",
+  PLAN_ROWS = "Plan Rows",
+  PLAN_WIDTH = "Plan Width",
+  ROWS_REMOVED_BY_FILTER = "Rows Removed by Filter",
+  ROWS_REMOVED_BY_JOIN_FILTER = "Rows Removed by Join Filter",
+  ROWS_REMOVED_BY_INDEX_RECHECK = "Rows Removed by Index Recheck",
+  ACTUAL_STARTUP_TIME = "Actual Startup Time",
+  ACTUAL_TOTAL_TIME = "Actual Total Time",
+  ACTUAL_LOOPS = "Actual Loops",
+  STARTUP_COST = "Startup Cost",
+  TOTAL_COST = "Total Cost",
+  PLANS = "Plans",
+  RELATION_NAME = "Relation Name",
+  SCHEMA = "Schema",
+  ALIAS = "Alias",
+  GROUP_KEY = "Group Key",
+  SORT_KEY = "Sort Key",
+  SORT_METHOD = "Sort Method",
+  SORT_SPACE_TYPE = "Sort Space Type",
+  SORT_SPACE_USED = "Sort Space Used",
+  JOIN_TYPE = "Join Type",
+  INDEX_NAME = "Index Name",
+  HASH_CONDITION = "Hash Cond",
+  PARENT_RELATIONSHIP = "Parent Relationship",
+  SUBPLAN_NAME = "Subplan Name",
+  PARALLEL_AWARE = "Parallel Aware",
+  WORKERS = "Workers",
+  WORKERS_PLANNED = "Workers Planned",
+  WORKERS_LAUNCHED = "Workers Launched",
+  SHARED_HIT_BLOCKS = "Shared Hit Blocks",
+  SHARED_READ_BLOCKS = "Shared Read Blocks",
+  SHARED_DIRTIED_BLOCKS = "Shared Dirtied Blocks",
+  SHARED_WRITTEN_BLOCKS = "Shared Written Blocks",
+  TEMP_READ_BLOCKS = "Temp Read Blocks",
+  TEMP_WRITTEN_BLOCKS = "Temp Written Blocks",
+  LOCAL_HIT_BLOCKS = "Local Hit Blocks",
+  LOCAL_READ_BLOCKS = "Local Read Blocks",
+  LOCAL_DIRTIED_BLOCKS = "Local Dirtied Blocks",
+  LOCAL_WRITTEN_BLOCKS = "Local Written Blocks",
+  OUTPUT = "Output",
+  HEAP_FETCHES = "Heap Fetches",
+  FILTER = "Filter",
+  STRATEGY = "Strategy",
+  PARTIAL_MODE = "Partial Mode",
+  OPERATION = "Operation",
+  RECHECK_COND = "Recheck Cond",
+  SCAN_DIRECTION = "Scan Direction",
+
+  // computed by pev
+  NODE_ID = "nodeId",
+  EXCLUSIVE_DURATION = "*Duration (exclusive)",
+  EXCLUSIVE_COST = "*Cost (exclusive)",
+  ACTUAL_ROWS_REVISED = "*Actual Rows Revised",
+  PLAN_ROWS_REVISED = "*Plan Rows Revised",
+  ROWS_REMOVED_BY_FILTER_REVISED = "*Rows Removed by Filter",
+  ROWS_REMOVED_BY_JOIN_FILTER_REVISED = "*Rows Removed by Join Filter",
+  ROWS_REMOVED_BY_INDEX_RECHECK_REVISED = "*Rows Removed by Index Recheck",
+
+  PLANNER_ESTIMATE_FACTOR = "*Planner Row Estimate Factor",
+  PLANNER_ESTIMATE_DIRECTION = "*Planner Row Estimate Direction",
+
+  EXCLUSIVE_SHARED_HIT_BLOCKS = "*Shared Hit Blocks (exclusive)",
+  EXCLUSIVE_SHARED_READ_BLOCKS = "*Shared Read Blocks (exclusive)",
+  EXCLUSIVE_SHARED_DIRTIED_BLOCKS = "*Shared Dirtied Blocks (exclusive)",
+  EXCLUSIVE_SHARED_WRITTEN_BLOCKS = "*Shared Written Blocks (exclusive)",
+  EXCLUSIVE_TEMP_READ_BLOCKS = "*Temp Read Blocks (exclusive)",
+  EXCLUSIVE_TEMP_WRITTEN_BLOCKS = "*Temp Written Blocks (exclusive)",
+  EXCLUSIVE_LOCAL_HIT_BLOCKS = "*Local Hit Blocks (exclusive)",
+  EXCLUSIVE_LOCAL_READ_BLOCKS = "*Local Read Blocks (exclusive)",
+  EXCLUSIVE_LOCAL_DIRTIED_BLOCKS = "*Local Dirtied Blocks (exclusive)",
+  EXCLUSIVE_LOCAL_WRITTEN_BLOCKS = "*Local Written Blocks (exclusive)",
+
+  WORKERS_PLANNED_BY_GATHER = "*Workers Planned By Gather",
+  WORKERS_LAUNCHED_BY_GATHER = "*Workers Launched By Gather",
+
+  CTE_SCAN = "CTE Scan",
+  CTE_NAME = "CTE Name",
+  FUNCTION_NAME = "Function Name",
+
+  PEV_PLAN_TAG = "plan_",
+}
+
+export enum WorkerProp {
+  WORKER_NUMBER = "Worker Number",
+}
