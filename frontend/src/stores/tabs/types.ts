@@ -32,8 +32,12 @@ export type Tab = EditorTab | ExplainTab;
 export type TabType = Tab["type"];
 
 // Init types (what you pass to openTab - fields are optional except type)
-export type EditorTabInit = Partial<Omit<EditorTab, "id" | "type">> & { type: "editor" };
-export type ExplainTabInit = Partial<Omit<ExplainTab, "id" | "type">> & { type: "explain" };
+export type EditorTabInit = Partial<Omit<EditorTab, "id" | "type">> & {
+  type: "editor";
+};
+export type ExplainTabInit = Partial<Omit<ExplainTab, "id" | "type">> & {
+  type: "explain";
+};
 export type TabInit = EditorTabInit | ExplainTabInit;
 
 // Map tab type to full tab state
@@ -47,4 +51,3 @@ export const TabSchemas = {
   editor: EditorTabSchema,
   explain: ExplainTabSchema,
 } as const;
-

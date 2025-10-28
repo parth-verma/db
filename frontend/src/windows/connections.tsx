@@ -18,7 +18,7 @@ import { DBConnectionService } from "@/main";
 import { ConnectionCard } from "@/components/ConnectionCard";
 import NewConnectionDialog from "@/components/NewConnectionDialog";
 import { PlusIcon } from "lucide-react";
-import {DBConnection} from "@/main/utils";
+import { DBConnection } from "@/main/utils";
 
 type DatabaseConnection = DBConnection;
 
@@ -29,7 +29,8 @@ function ConnectionsPage() {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [selectedForEdit, setSelectedForEdit] = useState<DatabaseConnection | null>(null);
+  const [selectedForEdit, setSelectedForEdit] =
+    useState<DatabaseConnection | null>(null);
 
   // Load connections using React Query
   const {

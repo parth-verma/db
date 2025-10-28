@@ -8,7 +8,12 @@ import Index from "@/routes/Workbench";
 function LeftPanelToggleButton() {
   const { toggleLeftPanel } = useLeftPanel();
   return (
-    <Button variant="secondary" size="icon" className="size-4" onClick={toggleLeftPanel}>
+    <Button
+      variant="secondary"
+      size="icon"
+      className="size-4"
+      onClick={toggleLeftPanel}
+    >
       <PanelLeftIcon />
     </Button>
   );

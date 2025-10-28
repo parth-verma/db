@@ -1,9 +1,13 @@
 import * as React from "react";
-import {useState} from "react";
-import {useQuery} from "@tanstack/react-query";
-import {ChevronRight, Database, Loader2,} from "lucide-react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { ChevronRight, Database, Loader2 } from "lucide-react";
 
-import {Collapsible, CollapsibleContent, CollapsibleTrigger,} from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Sidebar,
   SidebarContent,
@@ -16,8 +20,8 @@ import {
   SidebarMenuSub,
 } from "@/components/ui/sidebar";
 
-import {DBConnectionService} from "@/main";
-import {MySQLTables} from "@/components/mysql/MySQLTables.tsx";
+import { DBConnectionService } from "@/main";
+import { MySQLTables } from "@/components/mysql/MySQLTables.tsx";
 
 interface MySQLSidebarProps extends React.ComponentProps<typeof Sidebar> {
   connectionId: string;
@@ -130,4 +134,3 @@ export function MySQLSidebar({
     </Sidebar>
   );
 }
-

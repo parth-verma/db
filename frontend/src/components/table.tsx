@@ -12,8 +12,14 @@ import {
   VirtualItem,
   Virtualizer,
 } from "@tanstack/react-virtual";
-import React, {forwardRef, MouseEvent, useImperativeHandle, useLayoutEffect, useRef} from "react";
-import type {IQueryResult, IRow} from "@/lib/query-result";
+import React, {
+  forwardRef,
+  MouseEvent,
+  useImperativeHandle,
+  useLayoutEffect,
+  useRef,
+} from "react";
+import type { IQueryResult, IRow } from "@/lib/query-result";
 import { clsx } from "clsx";
 
 // Define a type for our dynamic row data
@@ -22,9 +28,12 @@ export interface TableRef {
   scrollToTop: () => void;
 }
 
-export const Table = forwardRef<TableRef, {
-  queryResult?: IQueryResult | null,
-}>(({ queryResult = null }, ref) => {
+export const Table = forwardRef<
+  TableRef,
+  {
+    queryResult?: IQueryResult | null;
+  }
+>(({ queryResult = null }, ref) => {
   const processedData = React.useMemo(() => {
     return queryResult?.getRows() ?? [];
   }, [queryResult]);
@@ -46,7 +55,7 @@ export const Table = forwardRef<TableRef, {
           </div>
         ),
         minSize: Math.max(col.name.length, col.type.length) * 7 + 24,
-        cell: ({row, column}) => row.original.get(parseInt(column.id)),
+        cell: ({ row, column }) => row.original.get(parseInt(column.id)),
       }),
     );
   }, [queryResult?.columns]);
@@ -64,112 +73,114 @@ export const Table = forwardRef<TableRef, {
 
 Table.displayName = "Table";
 
-const TableCore = forwardRef<TableRef, { table: DTable<IRow> }>(({ table }, ref) => {
-  // Convert the 2D array of strings to an array of objects
-  // where each object represents a row with column names as keys
-  const tableContainerRef = useRef<HTMLDivElement>(null);
-  const [isMounted, setIsMounted] = React.useState(false);
+const TableCore = forwardRef<TableRef, { table: DTable<IRow> }>(
+  ({ table }, ref) => {
+    // Convert the 2D array of strings to an array of objects
+    // where each object represents a row with column names as keys
+    const tableContainerRef = useRef<HTMLDivElement>(null);
+    const [isMounted, setIsMounted] = React.useState(false);
 
-  useLayoutEffect(() => {
-    setIsMounted(true);
-  }, []);
+    useLayoutEffect(() => {
+      setIsMounted(true);
+    }, []);
 
-  const onMouseDown = (handler: React.EventHandler<MouseEvent>) => {
-    return (e: MouseEvent<HTMLSpanElement>) => {
-      handler(e);
-      if (!tableContainerRef.current) return;
-      tableContainerRef.current.classList.add(
-        "cursor-col-resize",
-        "select-none",
-      );
+    const onMouseDown = (handler: React.EventHandler<MouseEvent>) => {
+      return (e: MouseEvent<HTMLSpanElement>) => {
+        handler(e);
+        if (!tableContainerRef.current) return;
+        tableContainerRef.current.classList.add(
+          "cursor-col-resize",
+          "select-none",
+        );
 
-      window.addEventListener(
-        "mouseup",
-        () => {
-          if (!tableContainerRef.current) return;
-          tableContainerRef.current.classList.remove(
-            "cursor-col-resize",
-            "select-none",
-          );
-        },
-        { once: true },
-      );
+        window.addEventListener(
+          "mouseup",
+          () => {
+            if (!tableContainerRef.current) return;
+            tableContainerRef.current.classList.remove(
+              "cursor-col-resize",
+              "select-none",
+            );
+          },
+          { once: true },
+        );
+      };
     };
-  };
 
-  useImperativeHandle(ref, () => {
-    return {
-      scrollToTop: () => {
-        tableContainerRef?.current?.scrollTo({
-          top: 0,
-          behavior: "instant"
-        })
-      }
-    }
-  }, [])
+    useImperativeHandle(ref, () => {
+      return {
+        scrollToTop: () => {
+          tableContainerRef?.current?.scrollTo({
+            top: 0,
+            behavior: "instant",
+          });
+        },
+      };
+    }, []);
 
-  const columnTemplate =
-    table
-      .getAllColumns()
-      .slice(0, -1)
-      .map((col) => col.getSize() + "px")
-      .join(" ") + " 1fr";
-  return (
-    <div
-      className="min-w-full overflow-auto max-h-full relative h-full"
-      ref={tableContainerRef}
-    >
-      <table className={"min-w-full grid relative"}>
-        <thead className="bg-secondary top-0 z-10 sticky ">
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr
-              key={headerGroup.id}
-              className={"grid w-full"}
-              style={{ gridTemplateColumns: columnTemplate }}
-            >
-              {headerGroup.headers.map((header, index) => (
-                <th
-                  key={header.id}
-                  className={clsx(
-                    "bg-secondary px-3 py-2 text-left text-sm font-medium text-secondary-foreground border-b border-border relative",
-                  )}
-                  style={{
-                    width:
-                      index === headerGroup.headers.length - 1
-                        ? ""
-                        : header.getSize(),
-                  }}
-                >
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
-                  {index !== headerGroup.headers.length - 1 &&
-                    header.column.getCanResize() && (
-                      <span
-                        onMouseDown={onMouseDown(header.getResizeHandler())}
-                        onTouchStart={header.getResizeHandler()}
-                        className={
-                          "cursor-col-resize h-5 px-2 touch-none select-none absolute top-2/4 -right-2.5 transform -translate-y-1/2 z-10"
-                        }
-                      >
-                        <div className={"w-0.5 h-full bg-border"}></div>
-                      </span>
+    const columnTemplate =
+      table
+        .getAllColumns()
+        .slice(0, -1)
+        .map((col) => col.getSize() + "px")
+        .join(" ") + " 1fr";
+    return (
+      <div
+        className="min-w-full overflow-auto max-h-full relative h-full"
+        ref={tableContainerRef}
+      >
+        <table className={"min-w-full grid relative"}>
+          <thead className="bg-secondary top-0 z-10 sticky ">
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr
+                key={headerGroup.id}
+                className={"grid w-full"}
+                style={{ gridTemplateColumns: columnTemplate }}
+              >
+                {headerGroup.headers.map((header, index) => (
+                  <th
+                    key={header.id}
+                    className={clsx(
+                      "bg-secondary px-3 py-2 text-left text-sm font-medium text-secondary-foreground border-b border-border relative",
                     )}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        {isMounted && (
-          <TableBody table={table} tableContainerRef={tableContainerRef} />
-        )}
-      </table>
-    </div>
-  );
-});
+                    style={{
+                      width:
+                        index === headerGroup.headers.length - 1
+                          ? ""
+                          : header.getSize(),
+                    }}
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                    {index !== headerGroup.headers.length - 1 &&
+                      header.column.getCanResize() && (
+                        <span
+                          onMouseDown={onMouseDown(header.getResizeHandler())}
+                          onTouchStart={header.getResizeHandler()}
+                          className={
+                            "cursor-col-resize h-5 px-2 touch-none select-none absolute top-2/4 -right-2.5 transform -translate-y-1/2 z-10"
+                          }
+                        >
+                          <div className={"w-0.5 h-full bg-border"}></div>
+                        </span>
+                      )}
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          {isMounted && (
+            <TableBody table={table} tableContainerRef={tableContainerRef} />
+          )}
+        </table>
+      </div>
+    );
+  },
+);
 
 TableCore.displayName = "TableCore";
 

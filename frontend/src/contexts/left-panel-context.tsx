@@ -1,4 +1,10 @@
-import React, { createContext, useCallback, useContext, useMemo, useRef } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+} from "react";
 import type { ImperativePanelHandle } from "react-resizable-panels";
 
 export type LeftPanelContextValue = {
@@ -13,7 +19,8 @@ const LeftPanelContext = createContext<LeftPanelContextValue | null>(null);
 
 export function useLeftPanel() {
   const ctx = useContext(LeftPanelContext);
-  if (!ctx) throw new Error("useLeftPanel must be used within LeftPanelProvider");
+  if (!ctx)
+    throw new Error("useLeftPanel must be used within LeftPanelProvider");
   return ctx;
 }
 
@@ -41,15 +48,20 @@ export function LeftPanelProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const value = useMemo<LeftPanelContextValue>(() => ({
-    leftPanelRef,
-    collapseLeftPanel,
-    expandLeftPanel,
-    toggleLeftPanel,
-    isLeftPanelCollapsed,
-  }), [collapseLeftPanel, expandLeftPanel, toggleLeftPanel, isLeftPanelCollapsed]);
+  const value = useMemo<LeftPanelContextValue>(
+    () => ({
+      leftPanelRef,
+      collapseLeftPanel,
+      expandLeftPanel,
+      toggleLeftPanel,
+      isLeftPanelCollapsed,
+    }),
+    [collapseLeftPanel, expandLeftPanel, toggleLeftPanel, isLeftPanelCollapsed],
+  );
 
   return (
-    <LeftPanelContext.Provider value={value}>{children}</LeftPanelContext.Provider>
+    <LeftPanelContext.Provider value={value}>
+      {children}
+    </LeftPanelContext.Provider>
   );
 }

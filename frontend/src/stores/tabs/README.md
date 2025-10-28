@@ -22,15 +22,15 @@ Access tab management actions:
 const { openTab, closeTab, setActiveTab, tabsList, active } = useTabActions();
 
 // Open a new editor tab
-const editorId = openTab({ 
-  type: "editor", 
-  editorValue: "SELECT * FROM users;" 
+const editorId = openTab({
+  type: "editor",
+  editorValue: "SELECT * FROM users;",
 });
 
 // Open an explain tab
-const explainId = openTab({ 
+const explainId = openTab({
   type: "explain",
-  explainQuery: "EXPLAIN SELECT * FROM orders;"
+  explainQuery: "EXPLAIN SELECT * FROM orders;",
 });
 
 // Close a tab
@@ -65,7 +65,7 @@ The hook automatically generates setter functions for each field (except `id` an
 
 ```typescript
 // Specific tab type hooks
-const editorTab = useEditorTab(tabId);  // Same as useTabState(tabId, "editor")
+const editorTab = useEditorTab(tabId); // Same as useTabState(tabId, "editor")
 const explainTab = useExplainTab(tabId); // Same as useTabState(tabId, "explain")
 
 // Get any tab without type narrowing
@@ -145,8 +145,8 @@ function EditorTabContent({ tabId }: { tabId: string }) {
 
   return (
     <div>
-      <input 
-        value={tab.editorValue} 
+      <input
+        value={tab.editorValue}
         onChange={(e) => tab.setEditorValue(e.target.value)}
       />
       {tab.queryResult && (
@@ -164,4 +164,3 @@ function EditorTabContent({ tabId }: { tabId: string }) {
 - **Auto-Generated Setters**: Setters are automatically created based on the schema
 - **Schema Validation**: Zod validates state and applies defaults
 - **Simple API**: Clean, intuitive interface for opening, closing, and managing tabs
-
