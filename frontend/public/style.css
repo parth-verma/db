@@ -41,6 +41,88 @@
     url("./Inter-Medium.ttf") format("truetype");
 }
 
+/* Jetbrains Mono */
+@font-face {
+  font-family: "Jetbrains Mono";
+  font-style: normal;
+  font-weight: 100;
+  src:
+    url("./fonts/jetbrains-mono/ttf/JetBrainsMono-Thin.ttf") format("truetype"),
+    url("./fonts/jetbrains-mono/webfonts/JetBrainsMono-Thin.woff2") format("woff2"),
+}
+
+@font-face {
+  font-family: "Jetbrains Mono";
+  font-style: normal;
+  font-weight: 200;
+  src:
+    url("./fonts/jetbrains-mono/ttf/JetBrainsMono-ExtraLight.ttf") format("truetype"),
+    url("./fonts/jetbrains-mono/webfonts/JetBrainsMono-ExtraLight.woff2") format("woff2"),
+}
+
+@font-face {
+  font-family: "Jetbrains Mono";
+  font-style: normal;
+  font-weight: 300;
+  src:
+    url("./fonts/jetbrains-mono/ttf/JetBrainsMono-Light.ttf") format("truetype"),
+    url("./fonts/jetbrains-mono/webfonts/JetBrainsMono-Light.woff2") format("woff2"),
+}
+
+@font-face {
+  font-family: "Jetbrains Mono";
+  font-style: normal;
+  font-weight: 400;
+  src:
+    url("./fonts/jetbrains-mono/ttf/JetBrainsMono-Regular.ttf") format("truetype"),
+    url("./fonts/jetbrains-mono/webfonts/JetBrainsMono-Regular.woff2") format("woff2"),
+}
+
+@font-face {
+  font-family: "Jetbrains Mono";
+  font-style: normal;
+  font-weight: 500;
+  src:
+    url("./fonts/jetbrains-mono/ttf/JetBrainsMono-Medium.ttf") format("truetype"),
+    url("./fonts//jetbrains-mono/webfonts/JetBrainsMono-Medium.woff2") format("woff2"),
+}
+
+@font-face {
+  font-family: "Jetbrains Mono";
+  font-style: normal;
+  font-weight: 600;
+  src:
+    url("./fonts/jetbrains-mono/ttf/JetBrainsMono-SemiBold.ttf") format("truetype"),
+    url("./fonts/jetbrains-mono/webfonts/JetBrainsMono-SemiBold.woff2") format("woff2"),
+}
+
+@font-face {
+  font-family: "Jetbrains Mono";
+  font-style: normal;
+  font-weight: 700;
+  src:
+    url("./fonts/jetbrains-mono/ttf/JetBrainsMono-Bold.ttf") format("truetype"),
+    url("./fonts/jetbrains-mono/webfonts/JetBrainsMono-Bold.woff2") format("woff2"),
+}
+
+@font-face {
+  font-family: "Jetbrains Mono";
+  font-style: normal;
+  font-weight: 800;
+  src:
+    url("./fonts/jetbrains-mono/ttf/JetBrainsMono-ExtraBold.ttf") format("truetype"),
+    url("./fonts/jetbrains-mono/webfonts/JetBrainsMono-ExtraBold.woff2") format("woff2"),
+}
+
+@font-face {
+  font-family: "Jetbrains Mono";
+  font-style: normal;
+  font-weight: 900;
+  src:
+    url("./fonts/jetbrains-mono/ttf/JetBrainsMono-Black.ttf") format("truetype"),
+    url("./fonts/jetbrains-mono/webfonts/JetBrainsMono-Black.woff2") format("woff2"),
+}
+
 h3 {
   font-size: 3em;
   line-height: 1.1;
