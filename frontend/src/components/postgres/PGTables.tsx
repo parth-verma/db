@@ -23,14 +23,14 @@ import {
   ContextMenuSubTrigger,
   ContextMenuSubContent,
 } from "@/components/ui/context-menu";
-import { useEditorStores } from "@/stores/tabs";
+import { useTabActions } from "@/stores/tabs";
 
 // parentId: `${database}::${schema}`
 export function PGTables({ connectionId, parentId }: NodeProps) {
   const [db, schema] = (parentId || "::").split("::");
   const key = `${db}::${schema}`;
   const queryClient = useQueryClient();
-  const { openTab } = useEditorStores();
+  const { openTab } = useTabActions();
 
   const {
     data: tables = [],

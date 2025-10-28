@@ -1,4 +1,4 @@
-import {useExplainTabStore} from "@/stores/tabs";
+import {useTabState} from "@/stores/tabs";
 import {useMemo, useRef} from "react";
 import {DBConnectionService} from "@/main";
 
@@ -14,10 +14,8 @@ loader.config({ monaco });
 loader.init();
 
 export function ExplainTab({ tabId }: { tabId: string }) {
-  const explainQuery = useExplainTabStore(tabId, (s) => s.explainQuery);
-  const setExplainQuery = useExplainTabStore(tabId, (s) => s.setExplainQuery);
-  const explainResult = useExplainTabStore(tabId, (s) => s.explainResult);
-  const setExplainResult = useExplainTabStore(tabId, (s) => s.setExplainResult);
+  const explainTab = useTabState(tabId, "explain");
+  const { explainQuery, setExplainQuery, explainResult, setExplainResult } = explainTab;
 
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
 

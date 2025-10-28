@@ -6,7 +6,7 @@ import {PlusIcon} from "lucide-react";
 import {ResizableHandle, ResizablePanel, ResizablePanelGroup,} from "@/components/ui/resizable.tsx";
 import {useLeftPanel} from "@/contexts/left-panel-context";
 
-import {useEditorStores} from "@/stores/tabs";
+import {useTabActions, useTab} from "@/stores/tabs";
 import {EditorTab} from "@/routes/Workbench/editor-tab.tsx";
 import {ScrollbarCustom} from "@/components/scroll-bar";
 import {lazy, Suspense} from "react";
@@ -15,11 +15,10 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 
 const QueryTab = lazy(() => import("@/routes/Workbench/Editors/query-tab.tsx").then(m => ({default: m.QueryTab})));
 const ExplainTab = lazy(() => import("@/routes/Workbench/Editors/explain-tab.tsx").then(m => ({default: m.ExplainTab})));
-import {useAnyTabStore} from "@/stores/tabs";
 
 function WorkbenchTabContent({ id }: { id: string }) {
-    const type = useAnyTabStore(id, s => s.type);
-    if (type === "explain") {
+    const tab = useTab(id);
+    if (tab?.type === "explain") {
         return <ExplainTab tabId={id}/>;
     }
     return <QueryTab tabId={id}/>;
@@ -27,7 +26,7 @@ function WorkbenchTabContent({ id }: { id: string }) {
 
 export default function Index() {
     // Tabs header state
-    const {order, active, openTab, setActiveTab} = useEditorStores();
+    const {tabsList: order, active, openTab, setActiveTab} = useTabActions();
     const {leftPanelRef} = useLeftPanel();
 
     return (

@@ -1,10 +1,10 @@
-import {useEditorStores, useEditorTabStore} from "@/stores/tabs";
+import {useTabActions, useTab} from "@/stores/tabs";
 import {TabsTrigger} from "@/components/ui/tabs.tsx";
 import {XIcon} from "lucide-react";
 
 export function EditorTab({tabId}: { tabId: string }) {
-    const title = useEditorTabStore(tabId, (s) => s.title);
-    const {order, closeTab} = useEditorStores();
+    const tab = useTab(tabId);
+    const {tabsList: order, closeTab} = useTabActions();
     const canCloseTabs = order.length > 1;
 
     return (
@@ -14,7 +14,7 @@ export function EditorTab({tabId}: { tabId: string }) {
             }
             value={tabId}
         >
-            <span className="truncate">{title}</span>
+            <span className="truncate">{tab?.title}</span>
             <button
                 type="button"
                 onClick={(e) => {

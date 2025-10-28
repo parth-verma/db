@@ -1,4 +1,4 @@
-import {useEditorStores} from "@/stores/tabs";
+import {useTabActions} from "@/stores/tabs";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {DBConnectionService} from "@/main";
 import {useState} from "react";
@@ -23,7 +23,7 @@ export function MySQLTables({
     connectionId: string;
     dbName: string;
 }) {
-    const {openTab} = useEditorStores();
+    const {openTab} = useTabActions();
 
     const {
         data: tables = [],
