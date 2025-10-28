@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button.tsx";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import * as monaco from "monaco-editor";
 import { DBConnection } from "@/main/utils";
+import { ExplainVisualization } from "@/components/explain/ExplainVisualization";
 
 // Initialize monaco similarly as QueryTab
 loader.config({ monaco });
@@ -116,36 +117,22 @@ export function ExplainTab({ tabId }: { tabId: string }) {
         collapsible
         collapsedSize={0}
       >
-        <div className="h-full w-full p-2 overflow-auto">
+        <div className="h-full w-full overflow-hidden">
           {runExplainMutation.isPending ? (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
               Running EXPLAIN...
             </div>
           ) : explainResult ? (
-            <Editor
-              language={"json"}
-              theme={"vs-dark"}
-              height="100%"
-              value={formatExplainOutput(explainResult)}
-              options={{ readOnly: true, minimap: { enabled: false } }}
-            />
+            <ExplainVisualization explainResult={explainResult} />
           ) : (
-            <div className="text-muted-foreground">No explain output yet.</div>
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+              No explain output yet.
+            </div>
           )}
         </div>
       </ResizablePanel>
     </ResizablePanelGroup>
   );
-}
-
-function formatExplainOutput(s: string): string {
-  // If it's valid JSON, pretty print; else return as is
-  try {
-    const parsed = JSON.parse(s);
-    return JSON.stringify(parsed, null, 2);
-  } catch {
-    return s;
-  }
 }
 
 export default ExplainTab;
