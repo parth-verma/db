@@ -12,7 +12,7 @@ import {
   SidebarGroupLabel,
 } from "@/components/ui/sidebar";
 import { DBConnectionService } from "@/main";
-import type {DBConnection} from "@/main/utils";
+import type { DBConnection } from "@/main/utils";
 import { PostgresSidebar } from "./sidebar-postgres";
 import { MySQLSidebar } from "./sidebar-mysql";
 

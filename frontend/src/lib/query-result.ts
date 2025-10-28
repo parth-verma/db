@@ -15,7 +15,7 @@ export interface IQueryResult {
   getRow(row: number): IRow;
   rowCount(): number;
   colCount(): number;
-  getRows(): IRow[]
+  getRows(): IRow[];
   // Optional: column type accessor if available
 }
 
@@ -36,10 +36,13 @@ export class QueryResult implements IQueryResult {
       } else {
         return { name: c.Name, type: c.Type };
       }
-    })
+    });
     this._rows = Array.isArray(rows) ? rows : [];
     this._nameToIndex = new Map(
-      cols.map((name, idx) => [typeof name === 'string' ? name : name?.Name, idx])
+      cols.map((name, idx) => [
+        typeof name === "string" ? name : name?.Name,
+        idx,
+      ]),
     );
   }
 
@@ -52,14 +55,15 @@ export class QueryResult implements IQueryResult {
     return this._rows.map((row) => {
       return {
         get: (col: number | string) => {
-          const idx = typeof col === "number" ? col : this._nameToIndex.get(col);
+          const idx =
+            typeof col === "number" ? col : this._nameToIndex.get(col);
           if (idx === undefined) {
             throw new Error(`Column ${col} not found`);
           }
           return row[idx];
         },
       };
-    })
+    });
   }
 
   getRow(row: number): IRow {

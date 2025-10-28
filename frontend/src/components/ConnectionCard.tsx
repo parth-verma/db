@@ -60,7 +60,12 @@ function DeleteButton({
   );
 }
 
-export function ConnectionCard({ connection, onConnect, onDelete, onEdit }: Props) {
+export function ConnectionCard({
+  connection,
+  onConnect,
+  onDelete,
+  onEdit,
+}: Props) {
   const logoSrc = connection.type === "postgres" ? PostgresLogo : MySQLLogo;
   const logoAlt =
     connection.type === "postgres" ? "PostgreSQL logo" : "MySQL logo";

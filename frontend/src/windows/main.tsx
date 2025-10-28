@@ -9,7 +9,6 @@ const queryClient = new QueryClient();
 // Wait for the router to be ready before rendering
 const rootElement = document.getElementById("root")!;
 
-
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(

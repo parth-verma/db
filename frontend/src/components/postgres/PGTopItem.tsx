@@ -10,7 +10,7 @@ import {
   SidebarMenuItem,
   SidebarMenuSub,
 } from "@/components/ui/sidebar";
-import { DBConnectionService} from "@/main";
+import { DBConnectionService } from "@/main";
 import { PGDatabases } from "./PGDatabases";
 import {
   ContextMenu,
@@ -18,7 +18,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import {DBConnection} from "@/main/utils";
+import { DBConnection } from "@/main/utils";
 
 export interface NodeProps {
   connectionId: string;

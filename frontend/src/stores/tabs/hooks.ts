@@ -7,7 +7,9 @@ import { TabType, TabTypeMap } from "./types";
 // ============================================================================
 
 export function useTabState<T extends TabType>(tabId: string, type: T) {
-  const tab = useTabsStore((state) => state.tabs.get(tabId) as TabTypeMap[T] | undefined);
+  const tab = useTabsStore(
+    (state) => state.tabs.get(tabId) as TabTypeMap[T] | undefined,
+  );
   const updateTab = useTabsStore((state) => state.updateTab);
 
   // Create setters for each field
@@ -19,7 +21,7 @@ export function useTabState<T extends TabType>(tabId: string, type: T) {
     const result: Record<string, (value: unknown) => void> = {};
     for (const key of Object.keys(tab)) {
       if (key === "id" || key === "type") continue;
-      
+
       const capitalizedKey = key.charAt(0).toUpperCase() + key.slice(1);
       result[`set${capitalizedKey}`] = (value: unknown) => {
         updateTab(tabId, { [key]: value } as Partial<TabTypeMap[T]>);
@@ -32,8 +34,8 @@ export function useTabState<T extends TabType>(tabId: string, type: T) {
     ...tab,
     ...setters,
   } as TabTypeMap[T] & {
-    [K in keyof TabTypeMap[T] as K extends "id" | "type" 
-      ? never 
+    [K in keyof TabTypeMap[T] as K extends "id" | "type"
+      ? never
       : `set${Capitalize<string & K>}`]: (value: TabTypeMap[T][K]) => void;
   };
 }
@@ -59,15 +61,15 @@ export function useTab(tabId: string) {
 }
 
 export function useTabsList() {
-  return useTabsStore((state) => 
-    state.order.map((id) => state.tabs.get(id)).filter(Boolean)
+  return useTabsStore((state) =>
+    state.order.map((id) => state.tabs.get(id)).filter(Boolean),
   );
 }
 
 export function useActiveTab() {
   const activeTabId = useTabsStore((state) => state.activeTabId);
-  return useTabsStore((state) => 
-    activeTabId ? state.tabs.get(activeTabId) : null
+  return useTabsStore((state) =>
+    activeTabId ? state.tabs.get(activeTabId) : null,
   );
 }
 
@@ -90,4 +92,3 @@ export function useTabActions() {
     active: activeTabId,
   };
 }
-
