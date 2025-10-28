@@ -1,4 +1,4 @@
-import {useEditorTabStore} from "@/stores/tabs";
+import {useTabState} from "@/stores/tabs";
 import {useRef} from "react";
 import {DBConnectionService} from "@/main";
 import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable.tsx";
@@ -13,7 +13,7 @@ import { QueryResult } from "@/lib/query-result";
 import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
 import {loader} from "@monaco-editor/react";
 import ErrorBoundary from "@/components/ErrorBoundary";
-// import {useEditorStores} from "@/stores/tabs";
+// import {useTabActions} from "@/stores/tabs";
 
 self.MonacoEnvironment = {
     getWorker() {
@@ -27,16 +27,19 @@ loader.init();
 
 export function QueryTab({tabId}) {
     // Tabs store integration
-    const activeEditorValue = useEditorTabStore(tabId, (s) => s.editorValue);
-    const setEditorValue = useEditorTabStore(tabId, (s) => s.setEditorValue);
-    const setQueryResult = useEditorTabStore(tabId, (s) => s.setQueryResult);
-    const setExecutionTime = useEditorTabStore(tabId, (s) => s.setExecutionTime);
-    const queryResult = useEditorTabStore(tabId, (s) => s.queryResult);
-    const lastExecutionTimeMs = useEditorTabStore(tabId, (s) => s.lastExecutionTimeMs);
+    const editorTab = useTabState(tabId, "editor");
+    const {
+        editorValue: activeEditorValue,
+        setEditorValue,
+        setQueryResult,
+        queryResult,
+        lastExecutionTimeMs,
+        setLastExecutionTimeMs,
+    } = editorTab;
     const tableRef = useRef<TableRef>(null);
 
     const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
-    // const { openTab } = useEditorStores();
+    // const { openTab } = useTabActions();
 
     const runQueryMutation = useMutation({
         mutationFn: async ({connectionId, query}: { connectionId: string; query: string }) => {
@@ -88,11 +91,11 @@ export function QueryTab({tabId}) {
         try {
             await runQueryMutation.mutateAsync({connectionId, query});
             const end = performance.now();
-            setExecutionTime?.(Math.round(end - start));
+            setLastExecutionTimeMs?.(Math.round(end - start));
         } catch (e) {
             // in case of error, we can still record elapsed time if desired
             const end = performance.now();
-            setExecutionTime?.(Math.round(end - start));
+            setLastExecutionTimeMs?.(Math.round(end - start));
             throw e;
         }
     }
