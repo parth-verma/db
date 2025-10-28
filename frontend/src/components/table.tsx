@@ -258,7 +258,7 @@ function TableBodyRow({ row, virtualRow, rowVirtualizer }: TableBodyRowProps) {
           <td
             key={cell.id}
             className={clsx(
-              "px-3 whitespace-nowrap text-ellipsis overflow-hidden",
+              "px-3 whitespace-nowrap text-ellipsis overflow-hidden font-mono text-sm py-1",
             )}
           >
             {flexRender(cell.column.columnDef.cell, cell.getContext())}
