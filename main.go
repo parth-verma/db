@@ -2,11 +2,11 @@ package main
 
 import (
 	"embed"
-	_ "embed"
-	"github.com/wailsapp/wails/v3/pkg/application"
 	"log"
 	"log/slog"
 	"runtime"
+
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 // Wails uses Go's `embed` package to embed the frontend files into the binary.
@@ -87,7 +87,7 @@ func main() {
 			return
 		}
 
-		app.Window.NewWithOptions(application.WebviewWindowOptions{
+		window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 			Title: "Database Connections",
 			Mac: application.MacWindow{
 				InvisibleTitleBarHeight: 50,
@@ -99,7 +99,27 @@ func main() {
 			BackgroundColour: application.NewRGB(27, 38, 54),
 			URL:              "/connections.html",
 		})
+
+		for _, w := range app.Window.GetAll() {
+			if w.ID() == window.ID() {
+				continue
+			}
+			if w.IsFullscreen() {
+				continue
+			}
+
+			if w.IsVisible() && w.IsFocused() {
+				windowX, windowY := w.RelativePosition()
+
+				window.SetRelativePosition(windowX+20, windowY+20)
+				break
+			}
+
+			// windowX, windowY = w.Position()
+		}
+
 	})
+
 	fileMenu.AddSeparator()
 	if runtime.GOOS == "darwin" {
 		fileMenu.AddRole(application.CloseWindow)
@@ -126,6 +146,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	// If an error occurred while running the application, log it and exit.
 }
