@@ -36,12 +36,17 @@ jobs:
           else
             echo "No existing release PRs found."
           fi
+      - name: Get version
+        id: current-version
+        uses: cocogitto/cocogitto-action@v4
+        with:
+            command: -v get-version
       - name: Changelog
         id: changelog
         uses: cocogitto/cocogitto-action@v4
         with:
             command: changelog
-            args: --at $(cog -v get-version)
+            args: --at ${{ steps.current-version.outputs.stdout }}
 
       - name: Cocogitto release
         id: release
