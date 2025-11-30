@@ -56,13 +56,13 @@ jobs:
             echo "No existing release PRs found."
           fi
           
-          # Also clean up any orphaned release branches
+          # Also clean up any orphaned release branches using gh api
           echo "Cleaning up orphaned release branches..."
-          REMOTE_RELEASE_BRANCHES=$(git ls-remote --heads origin 'refs/heads/release/*' | awk '{print $2}' | sed 's|refs/heads/||')
+          RELEASE_BRANCHES=$(gh api repos/${{ github.repository }}/branches --paginate --jq '.[] | select(.name | startswith("release/")) | .name')
           
-          for BRANCH in $REMOTE_RELEASE_BRANCHES; do
+          for BRANCH in $RELEASE_BRANCHES; do
             echo "Deleting orphaned branch: $BRANCH"
-            git push origin --delete "$BRANCH" || true
+            gh api -X DELETE "repos/${{ github.repository }}/git/refs/heads/$BRANCH" || true
           done
 
       - name: Install Cocogitto
@@ -75,7 +75,7 @@ jobs:
         if: steps.check-release.outputs.skip != 'true'
         id: current-version
         run: |
-          CURRENT_VERSION=$(cog get-version 2>/dev/null || echo "0.0.0")
+          CURRENT_VERSION=$(cog -v get-version 2>/dev/null || echo "0.0.0")
           echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "Current version: $CURRENT_VERSION"
 
@@ -83,35 +83,13 @@ jobs:
         if: steps.check-release.outputs.skip != 'true'
         id: next-version
         run: |
-          # Get the bump type based on conventional commits since last tag
-          set +e
-          BUMP_OUTPUT=$(cog bump --auto --dry-run 2>&1)
-          BUMP_EXIT_CODE=$?
-          set -e
-          
-          echo "Bump dry-run output:"
-          echo "$BUMP_OUTPUT"
-          
-          # Check if there's a version to bump to
-          if echo "$BUMP_OUTPUT" | grep -q "No conventional commits found"; then
-            echo "No conventional commits found since last release"
-            echo "skip=true" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          
-          # Extract the next version from dry-run output
-          NEXT_VERSION=$(echo "$BUMP_OUTPUT" | grep -oP '(?<=Bumping to )[0-9]+\.[0-9]+\.[0-9]+' || true)
+          NEXT_VERSION=$(cog -v bump --auto --dry-run --skip-untracked 2>/dev/null || echo "")
           
           if [ -z "$NEXT_VERSION" ]; then
-            # Try alternative pattern
-            NEXT_VERSION=$(echo "$BUMP_OUTPUT" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | tail -1 || true)
-          fi
-          
-          if [ -z "$NEXT_VERSION" ]; then
-            echo "No version bump needed based on commits"
+            echo "No version bump needed"
             echo "skip=true" >> $GITHUB_OUTPUT
           else
-            echo "Next version will be: $NEXT_VERSION"
+            echo "Next version: $NEXT_VERSION"
             echo "version=$NEXT_VERSION" >> $GITHUB_OUTPUT
             echo "skip=false" >> $GITHUB_OUTPUT
           fi
@@ -125,7 +103,7 @@ jobs:
           
           echo "Creating release branch: $BRANCH_NAME"
           
-          # Configure git
+          # Configure git for cocogitto
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
@@ -133,10 +111,10 @@ jobs:
           git checkout -b "$BRANCH_NAME"
           
           # Perform the version bump (this creates the commit and updates changelog)
-          cog bump --auto
+          cog bump --auto --skip-untracked
           
-          # Push the branch (without tags - tags will be created on merge)
-          git push origin "$BRANCH_NAME" --no-tags
+          # Push the branch using gh
+          gh repo sync --source . --branch "$BRANCH_NAME" || git push origin "$BRANCH_NAME" --no-tags
           
           echo "branch=$BRANCH_NAME" >> $GITHUB_OUTPUT
 
@@ -183,10 +161,5 @@ jobs:
           if [ "${{ steps.check-release.outputs.skip }}" == "true" ]; then
             echo "ℹ️ Skipping: This push is from a release branch merge."
           else
-            echo "ℹ️ No version bump needed based on conventional commits. Skipping release PR creation."
-            echo ""
-            echo "This can happen if:"
-            echo "  - There are no conventional commits since the last release"
-            echo "  - All commits are of types that don't trigger version bumps (e.g., chore, docs without breaking changes)"
-            echo "  - The repository doesn't have any tags yet (try running 'cog bump --auto' manually first)"
+            echo "ℹ️ No version bump needed based on conventional commits."
           fi
