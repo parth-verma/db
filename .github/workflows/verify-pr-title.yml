@@ -19,7 +19,7 @@ jobs:
         uses: cocogitto/cocogitto-action@v4
         with:
           command: verify
-          args: '${{ github.event.pull_request.title }}'
+          args: "'${{ github.event.pull_request.title }}'"
     
         
 
