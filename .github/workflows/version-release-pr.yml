@@ -36,23 +36,20 @@ jobs:
           else
             echo "No existing release PRs found."
           fi
+      - name: Changelog
+        id: changelog
+        uses: cocogitto/cocogitto-action@v4
+        with:
+            command: changelog
 
       - name: Cocogitto release
         id: release
         uses: cocogitto/cocogitto-action@v4
         with:
-          check: true
-          check-latest-tag-only: true
-          release: true
+          command: bump
+          args: --auto
           git-user: 'github-actions[bot]'
           git-user-email: 'github-actions[bot]@users.noreply.github.com'
-
-      - name: Generate changelog for PR
-        if: steps.release.outputs.version != ''
-        run: |
-          echo "VERSION=${{ steps.release.outputs.version }}" >> $GITHUB_ENV
-          # Extract changelog for this version
-          sed -n '/^## ${{ steps.release.outputs.version }}/,/^## /p' CHANGELOG.md | sed '$d' > .temp-changelog.md
 
       - name: Create Pull Request
         if: steps.release.outputs.version != ''
@@ -73,7 +70,7 @@ jobs:
             
             ### Changelog
             
-            ${{ steps.release.outputs.changelog }}
+            ${{ steps.changelog.outputs.stdout }}
             
             ### Next Steps
             
