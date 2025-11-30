@@ -15,11 +15,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Verify PR title follows conventional commits
+      - name: Setup Cocogitto
         uses: cocogitto/cocogitto-action@v4
         with:
-          command: verify
-          args: "'${{ github.event.pull_request.title }}'"
-    
-        
+          command: help
+          
+      - name: Verify PR title follows conventional commits
+        run: |
+          cog check "${{ github.event.pull_request.title }}"
 
