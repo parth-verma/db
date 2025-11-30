@@ -24,11 +24,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Close existing release PRs and delete branches
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Checking for existing release PRs..."
           
@@ -135,8 +132,6 @@ jobs:
       - name: Create release branch and bump version
         if: steps.next-version.outputs.skip != 'true'
         id: release-branch
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           NEXT_VERSION="${{ steps.next-version.outputs.version }}"
           BRANCH_NAME="release/v${NEXT_VERSION}"
@@ -151,7 +146,6 @@ jobs:
           git checkout -b "$BRANCH_NAME"
           
           # Perform the version bump (this creates the commit and updates changelog)
-          # Using --skip-ci to prevent CI from running on the bump commit itself
           cog bump --auto
           
           # Push the branch (without tags - tags will be created on merge)
@@ -162,7 +156,6 @@ jobs:
       - name: Create Pull Request
         if: steps.next-version.outputs.skip != 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NEXT_VERSION: ${{ steps.next-version.outputs.version }}
           BRANCH_NAME: ${{ steps.release-branch.outputs.branch }}
           CHANGELOG_CONTENT: ${{ steps.changelog.outputs.content }}
