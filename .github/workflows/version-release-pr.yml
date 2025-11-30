@@ -19,77 +19,147 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Close older release PRs
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check if push is from release branch merge
+        id: check-release
         run: |
-          # Find all open PRs with the 'release' label
+          # Get the merged PR's head branch (if this push was from a PR merge)
+          MERGED_PR=$(gh pr list --state merged --search "is:merged" --json headRefName,mergedAt --jq 'sort_by(.mergedAt) | reverse | .[0].headRefName // ""')
+          
+          echo "Most recently merged PR branch: $MERGED_PR"
+          
+          if [[ "$MERGED_PR" == release/* ]]; then
+            echo "This push is from a release branch merge. Skipping to avoid infinite loop."
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "This push is not from a release branch. Proceeding with release PR creation."
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Close existing release PRs and delete branches
+        if: steps.check-release.outputs.skip != 'true'
+        run: |
           echo "Checking for existing release PRs..."
-          OPEN_RELEASE_PRS=$(gh pr list --label release --state open --json number --jq '.[].number')
+          
+          # Find all open PRs with the 'release' label
+          OPEN_RELEASE_PRS=$(gh pr list --label release --state open --json number,headRefName --jq '.[] | "\(.number):\(.headRefName)"')
           
           if [ -n "$OPEN_RELEASE_PRS" ]; then
-            echo "Found open release PRs. Closing them..."
-            for PR_NUMBER in $OPEN_RELEASE_PRS; do
-              echo "Closing PR #$PR_NUMBER"
-              gh pr close $PR_NUMBER --comment "Closing this PR as a new release PR is being created with updated changes."
+            echo "Found open release PRs. Closing them and deleting branches..."
+            for PR_INFO in $OPEN_RELEASE_PRS; do
+              PR_NUMBER=$(echo "$PR_INFO" | cut -d':' -f1)
+              BRANCH_NAME=$(echo "$PR_INFO" | cut -d':' -f2)
+              
+              echo "Closing PR #$PR_NUMBER (branch: $BRANCH_NAME)"
+              gh pr close "$PR_NUMBER" --comment "Closing this PR as a new release PR is being created with updated changes." --delete-branch || true
             done
           else
             echo "No existing release PRs found."
           fi
-      - name: Get version
-        id: current-version
+          
+          # Also clean up any orphaned release branches using gh api
+          echo "Cleaning up orphaned release branches..."
+          RELEASE_BRANCHES=$(gh api repos/${{ github.repository }}/branches --paginate --jq '.[] | select(.name | startswith("release/")) | .name')
+          
+          for BRANCH in $RELEASE_BRANCHES; do
+            echo "Deleting orphaned branch: $BRANCH"
+            gh api -X DELETE "repos/${{ github.repository }}/git/refs/heads/$BRANCH" || true
+          done
+
+      - name: Install Cocogitto
+        if: steps.check-release.outputs.skip != 'true'
         uses: cocogitto/cocogitto-action@v4
         with:
-            command: -v get-version
-      - name: Changelog
+          command: help
+
+      - name: Get current version
+        if: steps.check-release.outputs.skip != 'true'
+        id: current-version
+        run: |
+          CURRENT_VERSION=$(cog -v get-version 2>/dev/null || echo "0.0.0")
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $CURRENT_VERSION"
+
+      - name: Calculate next version
+        if: steps.check-release.outputs.skip != 'true'
+        id: next-version
+        run: |
+          NEXT_VERSION=$(cog -v bump --auto --dry-run --skip-untracked 2>/dev/null || echo "")
+          
+          if [ -z "$NEXT_VERSION" ]; then
+            echo "No version bump needed"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "Next version: $NEXT_VERSION"
+            echo "version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create release branch and bump version
+        if: steps.check-release.outputs.skip != 'true' && steps.next-version.outputs.skip != 'true'
+        id: release-branch
+        run: |
+          NEXT_VERSION="${{ steps.next-version.outputs.version }}"
+          BRANCH_NAME="release/v${NEXT_VERSION}"
+          
+          echo "Creating release branch: $BRANCH_NAME"
+          
+          # Configure git for cocogitto
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Create and checkout release branch
+          git checkout -b "$BRANCH_NAME"
+          
+          # Perform the version bump (this creates the commit and updates changelog)
+          cog bump --auto --skip-untracked
+          
+          # Push the branch using gh
+          gh repo sync --source . --branch "$BRANCH_NAME" || git push origin "$BRANCH_NAME" --no-tags
+          
+          echo "branch=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        if: steps.check-release.outputs.skip != 'true' && steps.next-version.outputs.skip != 'true'
         id: changelog
         uses: cocogitto/cocogitto-action@v4
         with:
-            command: changelog
-            args: --at ${{ steps.current-version.outputs.stdout }}
-
-      - name: Cocogitto release
-        id: release
-        uses: cocogitto/cocogitto-action@v4
-        with:
-          command: bump
-          args: --auto
-          git-user: 'github-actions[bot]'
-          git-user-email: 'github-actions[bot]@users.noreply.github.com'
+          command: changelog
+          args: --at ${{ steps.next-version.outputs.version }}
 
       - name: Create Pull Request
-        if: steps.release.outputs.version != ''
+        if: steps.check-release.outputs.skip != 'true' && steps.next-version.outputs.skip != 'true'
         uses: peter-evans/create-pull-request@v7
         with:
-          branch: release/v${{ steps.release.outputs.version }}
-          commit-message: "chore(release): ${{ steps.release.outputs.version }}"
-          title: "chore(release): version ${{ steps.release.outputs.version }}"
+          branch: ${{ steps.release-branch.outputs.branch }}
           base: main
+          title: "chore(release): version ${{ steps.next-version.outputs.version }}"
           body: |
-            ## Release ${{ steps.release.outputs.version }}
-            
+            ## Release ${{ steps.next-version.outputs.version }}
+
             This PR was automatically generated by the version release workflow using Cocogitto.
-            
+
             ### Changes
-            
-            This release bumps the version to **${{ steps.release.outputs.version }}**.
-            
+
+            This release bumps the version to **${{ steps.next-version.outputs.version }}**.
+
             ### Changelog
-            
+
             ${{ steps.changelog.outputs.stdout }}
-            
+
             ### Next Steps
-            
+
             1. Review the changes
             2. Merge this PR to complete the version release
-            3. The release workflow will then create a GitHub release with artifacts
+            3. After merging, create a GitHub release from the version tag
           labels: |
             release
             automated
-          draft: false
 
       - name: Skip message
-        if: steps.release.outputs.version == ''
+        if: steps.check-release.outputs.skip == 'true' || steps.next-version.outputs.skip == 'true'
         run: |
-          echo "No version bump needed. Skipping release PR creation."
-
+          if [ "${{ steps.check-release.outputs.skip }}" == "true" ]; then
+            echo "ℹ️ Skipping: This push is from a release branch merge."
+          else
+            echo "ℹ️ No version bump needed based on conventional commits."
+          fi
