@@ -24,5 +24,5 @@ jobs:
           
       - name: Verify PR title follows conventional commits
         run: |
-          cog check '${{ github.event.pull_request.title }}'
+          cog verify '${{ github.event.pull_request.title }}'
 
