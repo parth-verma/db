@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Cocogitto
         uses: cocogitto/cocogitto-action@v4
@@ -22,5 +24,5 @@ jobs:
           
       - name: Verify PR title follows conventional commits
         run: |
-          cog check "${{ github.event.pull_request.title }}"
+          cog check '${{ github.event.pull_request.title }}'
 
