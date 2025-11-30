@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - bugfix/release-workflow
 
 permissions:
   contents: write
@@ -21,6 +22,8 @@ jobs:
 
       - name: Check if push is from release branch merge
         id: check-release
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           # Get the merged PR's head branch (if this push was from a PR merge)
           MERGED_PR=$(gh pr list --state merged --search "is:merged" --json headRefName,mergedAt --jq 'sort_by(.mergedAt) | reverse | .[0].headRefName // ""')
@@ -37,6 +40,8 @@ jobs:
 
       - name: Close existing release PRs and delete branches
         if: steps.check-release.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           echo "Checking for existing release PRs..."
           
@@ -97,6 +102,8 @@ jobs:
       - name: Create release branch and bump version
         if: steps.check-release.outputs.skip != 'true' && steps.next-version.outputs.skip != 'true'
         id: release-branch
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           NEXT_VERSION="${{ steps.next-version.outputs.version }}"
           BRANCH_NAME="release/v${NEXT_VERSION}"
@@ -111,10 +118,10 @@ jobs:
           git checkout -b "$BRANCH_NAME"
           
           # Perform the version bump (this creates the commit and updates changelog)
-          cog bump --auto --skip-untracked
+          cog bump --auto
           
           # Push the branch using gh
-          gh repo sync --source . --branch "$BRANCH_NAME" || git push origin "$BRANCH_NAME" --no-tags
+          gh repo sync --source . --branch "$BRANCH_NAME"
           
           echo "branch=$BRANCH_NAME" >> $GITHUB_OUTPUT
 
@@ -131,7 +138,7 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           branch: ${{ steps.release-branch.outputs.branch }}
-          base: main
+          base: bugfix/release-workflow
           title: "chore(release): version ${{ steps.next-version.outputs.version }}"
           body: |
             ## Release ${{ steps.next-version.outputs.version }}
