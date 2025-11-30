@@ -41,6 +41,7 @@ jobs:
         uses: cocogitto/cocogitto-action@v4
         with:
             command: changelog
+            args: --at $(cog -v get-version)
 
       - name: Cocogitto release
         id: release
@@ -53,12 +54,12 @@ jobs:
 
       - name: Create Pull Request
         if: steps.release.outputs.version != ''
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           branch: release/v${{ steps.release.outputs.version }}
           commit-message: "chore(release): ${{ steps.release.outputs.version }}"
           title: "chore(release): version ${{ steps.release.outputs.version }}"
+          base: main
           body: |
             ## Release ${{ steps.release.outputs.version }}
             
